@@ -5,9 +5,11 @@ from pyfasta import Fasta
 
 class OrthogroupToGeneName():
     @staticmethod
-    def run(path_to_orthogroups_tsv, path_to_fastas_dir, write=False):
-        assert os.path.isfile(path_to_orthogroups_tsv)
-        assert os.path.isdir(path_to_fastas_dir)
+    def run(path_to_orthogroups_tsv, path_to_fasta_dir, write=False):
+        assert os.path.isfile(path_to_orthogroups_tsv), 'file --path_to_orthogroups_tsv does not exist: {}'.format(
+            path_to_orthogroups_tsv)
+        assert os.path.isdir(path_to_fasta_dir), 'folder --path_to_fasta_dir does not exist: {}'.format(
+            path_to_fasta_dir)
         if write:
             out = os.path.dirname(path_to_orthogroups_tsv)
             assert os.path.isdir(out)
@@ -27,7 +29,9 @@ class OrthogroupToGeneName():
             return identifer.split(' ', maxsplit=1)[0]
 
         def get_gene_id_to_name_dict(strain):
-            gene_ids = [key for key in Fasta(path_to_fastas_dir + '/{}.faa'.format(strain)).keys()]
+            fasta_file_path = path_to_fasta_dir + '/{}.faa'.format(strain)
+            assert os.path.isfile(fasta_file_path), 'fasta file {} is missing!'.format(fasta_file_path)
+            gene_ids = [key for key in Fasta(fasta_file_path).keys()]
             return {get_gene_id(gene_id): get_gene_name(gene_id) for gene_id in gene_ids}
 
         def gene_id_to_gene_name(gene_ids, gene_id_to_name):
@@ -53,13 +57,32 @@ class OrthogroupToGeneName():
         df_majority['Gene Name Occurrences'] = df.apply(majority_vote, axis=1)
 
         if write:
-            df_majority.to_csv(path_or_buf=out + '/Orthogroup_Best_Names.tsv', sep='\t')
+            out_path=out + '/Orthogroup_Best_Names.tsv'
+            df_majority.to_csv(path_or_buf=out_path, sep='\t')
+            print('Successfully wrote "{}"'.format(out_path))
 
-        majority_dict = {orthogroup: majority_name for orthogroup, majority_name in df_majority['Best Gene Name'].iteritems()}
+        majority_dict = {orthogroup: majority_name for orthogroup, majority_name in
+                         df_majority['Best Gene Name'].iteritems()}
         return majority_dict
 
 
-path_to_orthogroups_tsv = '/home/thomas/PycharmProjects/44Paracasei/Genomics/faa/OrthoFinder/Results_Aug23_1/Orthogroups/Orthogroups.tsv'
-path_to_fastas_dir = '/home/thomas/PycharmProjects/44Paracasei/Genomics/faa'
+if __name__ == "__main__":
+    import argparse
 
-OrthogroupToGeneName().run(path_to_orthogroups_tsv, path_to_fastas_dir, write=True)
+    parser = argparse.ArgumentParser(
+        description=
+        """
+        Create new file in the same folder as Orthogroups.tsv which contains the most common
+        gene name for each orthogroup.
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--og_tsv", type=str, help="file with base palette", required=True
+    )
+    parser.add_argument(
+        "--fasta_dir", type=str, help="avoid black and similar colors", required=True
+    )
+    args = parser.parse_args()
+
+    OrthogroupToGeneName().run(args.og_tsv, args.fasta_dir, write=True)
