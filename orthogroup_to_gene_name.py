@@ -57,7 +57,7 @@ class OrthogroupToGeneName():
         df_majority['Gene Name Occurrences'] = df.apply(majority_vote, axis=1)
 
         if write:
-            out_path=out + '/Orthogroup_Best_Names.tsv'
+            out_path = out + '/Orthogroup_Best_Names.tsv'
             df_majority.to_csv(path_or_buf=out_path, sep='\t')
             print('Successfully wrote "{}"'.format(out_path))
 
@@ -72,17 +72,29 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description=
         """
-        Create new file in the same folder as Orthogroups.tsv which contains the most common
-        gene name for each orthogroup.
+        Create new file in the same folder as Orthogroups.tsv which contains 
+        the most common gene name for each orthogroup.
+        
+        Usage as class:
+        >>> from orthogroup_to_gene_name import OrthogroupToGeneName
+        >>> OrthogroupToGeneName().run(
+                path_to_orthogroups_tsv=<og_tsv>,
+                path_to_fasta_dir=<fasta_dir>
+                write=<True/False>
+                )
+            # returns dictionary: {'OG0000000': 'best-gene-name', ...}
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "--og_tsv", type=str, help="file with base palette", required=True
+        "--og_tsv", type=str,
+        help="Path to Orthogroups.tsv, usually located here: OrthoFinder/Results_{date}/Orthogroups/Orthogroups.tsv",
+        required=True
     )
     parser.add_argument(
-        "--fasta_dir", type=str, help="avoid black and similar colors", required=True
+        "--fasta_dir", type=str, help="Path to folder where FASTA-files are stored. Fasta-files must end with .faa",
+        required=True
     )
     args = parser.parse_args()
 
-    OrthogroupToGeneName().run(args.og_tsv, args.fasta_dir, write=True)
+    OrthogroupToGeneName().run(path_to_orthogroups_tsv=args.og_tsv, path_to_fasta_dir=args.fasta_dir, write=True)
