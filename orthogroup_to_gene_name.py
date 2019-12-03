@@ -57,7 +57,7 @@ class OrthogroupToGeneName():
         df_majority['Gene Name Occurrences'] = df.apply(majority_vote, axis=1)
 
         if write:
-            out_path = out + '/Orthogroup_Best_Names.tsv'
+            out_path = out + '/Orthogroup_BestNames.tsv'
             df_majority.to_csv(path_or_buf=out_path, sep='\t')
             print('Successfully wrote "{}"'.format(out_path))
 
