@@ -1,6 +1,6 @@
 # Copyright (C) <2019> University of Bern - Interfaculty Bioinformatics Unit
 
-# This program is heavily based on Marco Galardinis roary_plots.
+# This program is heavily based on Marco Galardinis (mgala@bu.edu) roary_plots.
 # https://github.com/sanger-pathogens/Roary/tree/master/contrib/roary_plots
 
 # This program is free software: you can redistribute it and/or
