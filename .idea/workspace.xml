@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8b411603-84a3-40a6-8f78-8b42fc96ce8f" name="Default Changelist" comment="" />
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <list default="true" id="8b411603-84a3-40a6-8f78-8b42fc96ce8f" name="Default Changelist" comment="added roary_plots imitation">
+      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/orthofinder_plots.py" beforeDir="false" afterPath="$PROJECT_DIR$/orthofinder_plots.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -15,26 +20,45 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="ProjectId" id="1Q9BppKfo0oFOanq2b5raWS75HO" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
-  </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.orthofinder_plots">
+    <configuration name="orthofinder_plots" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="orthogroup_to_gene_name" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/orthofinder_plots.py" />
+      <option name="PARAMETERS" value="--tree data/SpeciesTree_rooted.txt --spreadsheet data/Orthogroups.tsv --output_folder=output" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="orthogroup_to_gene_name" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="orthogroup_to_gene_name" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -49,7 +73,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/orthogroup_to_gene_name.py" />
-      <option name="PARAMETERS" value="" />
+      <option name="PARAMETERS" value="--og_tsv $PROJECT_DIR$/../genomeDBmanager/database/OrthoFinder/fastas/OrthoFinder/Results_Nov22_1/Orthogroups/Orthogroups.tsv --fasta_dir $PROJECT_DIR$/../genomeDBmanager/database/OrthoFinder/fastas" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -57,11 +81,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Python.orthogroup_to_gene_name" />
+      <item itemvalue="Python.orthofinder_plots" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.orthogroup_to_gene_name" />
+        <item itemvalue="Python.orthofinder_plots" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+    <option name="showServicesTree" value="false" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -74,13 +116,130 @@
       <option name="presentableId" value="Default" />
       <updated>1567173116087</updated>
       <workItem from="1567173117232" duration="10168000" />
+      <workItem from="1569313819967" duration="33000" />
+      <workItem from="1575286249815" duration="278000" />
+      <workItem from="1575396938678" duration="147000" />
+      <workItem from="1575397113614" duration="8883000" />
+      <workItem from="1575410641021" duration="234000" />
+      <workItem from="1575462017754" duration="3373000" />
     </task>
+    <task id="LOCAL-00001" summary="added roary_plots imitation">
+      <created>1575410843183</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1575410843183</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="added roary_plots imitation" />
+    <option name="LAST_COMMIT_MESSAGE" value="added roary_plots imitation" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="751" y="644" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1575464647351">
+      <screen x="0" y="28" width="3072" height="1700" />
+    </state>
+    <state x="259" y="473" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.28.2560.1412@0.28.2560.1412" timestamp="1575405131504" />
+    <state x="751" y="644" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.28.3072.1700@0.28.3072.1700" timestamp="1575464647351" />
+    <state x="963" y="462" width="624" height="542" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1575397125322">
+      <screen x="0" y="28" width="2560" height="1412" />
+    </state>
+    <state x="963" y="462" width="624" height="542" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.28.2560.1412@0.28.2560.1412" timestamp="1575397125322" />
+    <state x="1435" y="343" width="844" height="806" key="CommitChangelistDialog2" timestamp="1575465302390">
+      <screen x="0" y="28" width="3072" height="1700" />
+    </state>
+    <state x="1196" y="290" width="844" height="806" key="CommitChangelistDialog2/0.28.2560.1412@0.28.2560.1412" timestamp="1575410843012" />
+    <state x="1435" y="343" key="CommitChangelistDialog2/0.28.3072.1700@0.28.3072.1700" timestamp="1575465302390" />
+    <state width="1828" height="394" key="GridCell.Tab.0.bottom" timestamp="1575464509864">
+      <screen x="0" y="28" width="3072" height="1700" />
+    </state>
+    <state width="1828" height="394" key="GridCell.Tab.0.bottom/0.28.2560.1412@0.28.2560.1412" timestamp="1575406001903" />
+    <state width="1828" height="394" key="GridCell.Tab.0.bottom/0.28.3072.1700@0.28.3072.1700" timestamp="1575464509864" />
+    <state width="1828" height="394" key="GridCell.Tab.0.center" timestamp="1575464509862">
+      <screen x="0" y="28" width="3072" height="1700" />
+    </state>
+    <state width="1828" height="394" key="GridCell.Tab.0.center/0.28.2560.1412@0.28.2560.1412" timestamp="1575406001902" />
+    <state width="1828" height="394" key="GridCell.Tab.0.center/0.28.3072.1700@0.28.3072.1700" timestamp="1575464509862" />
+    <state width="1828" height="394" key="GridCell.Tab.0.left" timestamp="1575464509861">
+      <screen x="0" y="28" width="3072" height="1700" />
+    </state>
+    <state width="1828" height="394" key="GridCell.Tab.0.left/0.28.2560.1412@0.28.2560.1412" timestamp="1575406001902" />
+    <state width="1828" height="394" key="GridCell.Tab.0.left/0.28.3072.1700@0.28.3072.1700" timestamp="1575464509861" />
+    <state width="1828" height="394" key="GridCell.Tab.0.right" timestamp="1575464509863">
+      <screen x="0" y="28" width="3072" height="1700" />
+    </state>
+    <state width="1828" height="394" key="GridCell.Tab.0.right/0.28.2560.1412@0.28.2560.1412" timestamp="1575406001903" />
+    <state width="1828" height="394" key="GridCell.Tab.0.right/0.28.3072.1700@0.28.3072.1700" timestamp="1575464509863" />
+    <state width="1828" height="394" key="GridCell.Tab.1.bottom" timestamp="1575464516917">
+      <screen x="0" y="28" width="3072" height="1700" />
+    </state>
+    <state width="1828" height="394" key="GridCell.Tab.1.bottom/0.28.2560.1412@0.28.2560.1412" timestamp="1575406001903" />
+    <state width="1828" height="394" key="GridCell.Tab.1.bottom/0.28.3072.1700@0.28.3072.1700" timestamp="1575464516917" />
+    <state width="1828" height="394" key="GridCell.Tab.1.center" timestamp="1575464516916">
+      <screen x="0" y="28" width="3072" height="1700" />
+    </state>
+    <state width="1828" height="394" key="GridCell.Tab.1.center/0.28.2560.1412@0.28.2560.1412" timestamp="1575406001903" />
+    <state width="1828" height="394" key="GridCell.Tab.1.center/0.28.3072.1700@0.28.3072.1700" timestamp="1575464516916" />
+    <state width="1828" height="394" key="GridCell.Tab.1.left" timestamp="1575464516916">
+      <screen x="0" y="28" width="3072" height="1700" />
+    </state>
+    <state width="1828" height="394" key="GridCell.Tab.1.left/0.28.2560.1412@0.28.2560.1412" timestamp="1575406001903" />
+    <state width="1828" height="394" key="GridCell.Tab.1.left/0.28.3072.1700@0.28.3072.1700" timestamp="1575464516916" />
+    <state width="1828" height="394" key="GridCell.Tab.1.right" timestamp="1575464516917">
+      <screen x="0" y="28" width="3072" height="1700" />
+    </state>
+    <state width="1828" height="394" key="GridCell.Tab.1.right/0.28.2560.1412@0.28.2560.1412" timestamp="1575406001903" />
+    <state width="1828" height="394" key="GridCell.Tab.1.right/0.28.3072.1700@0.28.3072.1700" timestamp="1575464516917" />
+    <state x="1081" y="444" key="SettingsEditor" timestamp="1575400831496">
+      <screen x="0" y="28" width="2560" height="1412" />
+    </state>
+    <state x="1081" y="444" key="SettingsEditor/0.28.2560.1412@0.28.2560.1412" timestamp="1575400831496" />
+    <state x="1218" y="430" width="800" height="526" key="Vcs.Push.Dialog.v2" timestamp="1575410844556">
+      <screen x="0" y="28" width="2560" height="1412" />
+    </state>
+    <state x="1218" y="430" width="800" height="526" key="Vcs.Push.Dialog.v2/0.28.2560.1412@0.28.2560.1412" timestamp="1575410844556" />
+    <state width="1300" height="850" key="XDebugger.FullValuePopup" timestamp="1575464528966">
+      <screen x="0" y="28" width="3072" height="1700" />
+    </state>
+    <state width="1083" height="706" key="XDebugger.FullValuePopup/0.28.2560.1412@0.28.2560.1412" timestamp="1575405457872" />
+    <state width="1300" height="850" key="XDebugger.FullValuePopup/0.28.3072.1700@0.28.3072.1700" timestamp="1575464528966" />
+    <state x="1337" y="453" width="501" height="711" key="refactoring.ChangeSignatureDialog" timestamp="1575399362359">
+      <screen x="0" y="28" width="2560" height="1412" />
+    </state>
+    <state x="1337" y="453" width="501" height="711" key="refactoring.ChangeSignatureDialog/0.28.2560.1412@0.28.2560.1412" timestamp="1575399362359" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/orthogroup_to_gene_name.py</url>
+          <line>63</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/orthofinder_tools$orthogroup_to_gene_name.coverage" NAME="orthogroup_to_gene_name Coverage Results" MODIFIED="1575464509625" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/orthogroup_to_gene_name$orthogroup_to_gene_name.coverage" NAME="orthogroup_to_gene_name Coverage Results" MODIFIED="1567183196170" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/orthofinder_tools$orthofinder_plots.coverage" NAME="orthofinder_plots Coverage Results" MODIFIED="1575405858366" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

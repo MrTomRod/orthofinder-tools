@@ -13,16 +13,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 
-# Neither the institution name nor the name roary_plots
-# can be used to endorse or promote products derived from
-# this software without prior written permission.
-# For written permission, please contact <marco@ebi.ac.uk>.
-
-# Products derived from this software may not be called roary_plots
-# nor may roary_plots appear in their names without prior written
-# permission of the developers. You should have received a copy
-# of the GNU General Public License along with this program.
-# If not, see <http://www.gnu.org/licenses/>.
+__author__ = "Thomas Roder"  # thomas.roder@bioinformatics.unibe.ch
+__version__ = '0.1.0'
 
 import os
 import pandas as pd
@@ -80,7 +72,7 @@ class OrthofinderPlots():
         idx = pandas_table.sum(axis=1).sort_values(ascending=False).index
         orthofinder_sorted = pandas_table.loc[idx]
 
-        # Pangenome frequency plot
+        ## Plot pangenome frequency
         plt.figure(figsize=(7, 5))
 
         number_of_strains = pandas_table.shape[1]
@@ -89,7 +81,8 @@ class OrthofinderPlots():
             x=pandas_table.sum(axis=1),
             bins=number_of_strains,
             histtype="stepfilled",
-            alpha=.7)
+            alpha=.7
+        )
 
         plt.xlabel('No. of genomes')
         plt.ylabel('No. of genes')
@@ -105,7 +98,7 @@ class OrthofinderPlots():
         tree_tip_labels = phylo_object.get_terminals()
         orthofinder_sorted = orthofinder_sorted[[x.name for x in tree_tip_labels]]
 
-        # Plot presence/absence matrix against the tree
+        ## Plot presence/absence matrix against the tree
         with sns.axes_style('whitegrid'):
             fig = plt.figure(figsize=(17, 10))
 
@@ -164,7 +157,7 @@ class OrthofinderPlots():
             plt.savefig(save_path, dpi=300)
             plt.clf()
 
-        # Plot the pangenome pie chart
+        ## Plot the pangenome pie chart
         plt.figure(figsize=(10, 10))
 
         core = pandas_table[(pandas_table.sum(axis=1) >= pandas_table.shape[1] * 0.99) & (
