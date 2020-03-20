@@ -58,27 +58,35 @@ class OrthofinderPlots():
         return pandas_table.transpose()
 
     @staticmethod
-    def create_plots(phylo_object, pandas_table, output_location, output_format='svg', no_labels=False):
-        assert os.path.isdir(output_location)
-        assert output_format in ['png', 'tiff', 'pdf', 'svg']
+    def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False):
+        assert os.path.isdir(out)
+        assert format in ['png', 'tiff', 'pdf', 'svg']
+
+        if type(tree) == str:
+            tree = OrthofinderPlots.import_tree(tree)
+        assert type(tree) == Phylo.Newick.Tree
+
+        if type(orthogroups_tsv) == str:
+            orthogroups_tsv = OrthofinderPlots.import_orthofinder_table(orthogroups_tsv)
+        assert type(orthogroups_tsv) == pd.DataFrame
 
         matplotlib.use('Agg')
         sns.set_style('white')
 
         # Max distance to create better plots
-        mdist = max([phylo_object.distance(phylo_object.root, x) for x in phylo_object.get_terminals()])
+        mdist = max([tree.distance(tree.root, x) for x in tree.get_terminals()])
 
         # Sort the matrix by the sum of strains presence
-        idx = pandas_table.sum(axis=1).sort_values(ascending=False).index
-        orthofinder_sorted = pandas_table.loc[idx]
+        idx = orthogroups_tsv.sum(axis=1).sort_values(ascending=False).index
+        orthofinder_sorted = orthogroups_tsv.loc[idx]
 
         ## Plot pangenome frequency
         plt.figure(figsize=(7, 5))
 
-        number_of_strains = pandas_table.shape[1]
+        number_of_strains = orthogroups_tsv.shape[1]
 
         plt.hist(
-            x=pandas_table.sum(axis=1),
+            x=orthogroups_tsv.sum(axis=1),
             bins=number_of_strains,
             histtype="stepfilled",
             alpha=.7
@@ -90,12 +98,12 @@ class OrthofinderPlots():
         sns.despine(left=True,
                     bottom=True)
 
-        save_path = os.path.join(output_location, 'pangenome_frequency.' + output_format)
+        save_path = os.path.join(out, 'pangenome_frequency.' + format)
         plt.savefig(save_path, dpi=300)
         plt.clf()
 
         # Sort the matrix according to tip labels in the tree
-        tree_tip_labels = phylo_object.get_terminals()
+        tree_tip_labels = tree.get_terminals()
         orthofinder_sorted = orthofinder_sorted[[x.name for x in tree_tip_labels]]
 
         ## Plot presence/absence matrix against the tree
@@ -123,54 +131,54 @@ class OrthofinderPlots():
 
             fig.subplots_adjust(wspace=0, hspace=0)
 
-            ax1.set_title('Orthofinder matrix\n(%d gene clusters)' % pandas_table.shape[0])
+            ax1.set_title('Orthofinder matrix\n(%d gene clusters)' % orthogroups_tsv.shape[0])
 
             if no_labels:
                 Phylo.draw(
-                    tree=phylo_object, axes=ax,
+                    tree=tree, axes=ax,
                     show_confidence=False,
                     label_func=lambda x: None,
                     xticks=([],), yticks=([],),
                     ylabel=('',), xlabel=('',),
                     xlim=(-mdist * 0.1, mdist + mdist * 0.1),
                     axis=('off',),
-                    title=('Tree\n(%d strains)' % pandas_table.shape[1],),
+                    title=('Tree\n(%d strains)' % orthogroups_tsv.shape[1],),
                     do_show=False,
                 )
             else:
-                fsize = 12 - 0.1 * pandas_table.shape[1]
+                fsize = 12 - 0.1 * orthogroups_tsv.shape[1]
                 if fsize < 7:
                     fsize = 7
                 with plt.rc_context({'font.size': fsize}):
-                    Phylo.draw(phylo_object, axes=ax,
+                    Phylo.draw(tree, axes=ax,
                                show_confidence=False,
                                label_func=lambda x: str(x)[:10],
                                xticks=([],), yticks=([],),
                                ylabel=('',), xlabel=('',),
-                               xlim=(-mdist * 0.1, mdist + mdist * 0.45 - mdist * pandas_table.shape[1] * 0.001),
+                               xlim=(-mdist * 0.1, mdist + mdist * 0.45 - mdist * orthogroups_tsv.shape[1] * 0.001),
                                axis=('off',),
-                               title=('Tree\n(%d strains)' % pandas_table.shape[1],),
+                               title=('Tree\n(%d strains)' % orthogroups_tsv.shape[1],),
                                do_show=False,
                                )
 
-            save_path = os.path.join(output_location, 'pangenome_matrix.' + output_format)
+            save_path = os.path.join(out, 'pangenome_matrix.' + format)
             plt.savefig(save_path, dpi=300)
             plt.clf()
 
         ## Plot the pangenome pie chart
         plt.figure(figsize=(10, 10))
 
-        core = pandas_table[(pandas_table.sum(axis=1) >= pandas_table.shape[1] * 0.99) & (
-                pandas_table.sum(axis=1) <= pandas_table.shape[1])].shape[0]
+        core = orthogroups_tsv[(orthogroups_tsv.sum(axis=1) >= orthogroups_tsv.shape[1] * 0.99) & (
+                orthogroups_tsv.sum(axis=1) <= orthogroups_tsv.shape[1])].shape[0]
         softcore = \
-            pandas_table[(pandas_table.sum(axis=1) >= pandas_table.shape[1] * 0.95) & (
-                    pandas_table.sum(axis=1) < pandas_table.shape[1] * 0.99)].shape[0]
-        shell = pandas_table[(pandas_table.sum(axis=1) >= pandas_table.shape[1] * 0.15) & (
-                pandas_table.sum(axis=1) < pandas_table.shape[1] * 0.95)].shape[
+            orthogroups_tsv[(orthogroups_tsv.sum(axis=1) >= orthogroups_tsv.shape[1] * 0.95) & (
+                    orthogroups_tsv.sum(axis=1) < orthogroups_tsv.shape[1] * 0.99)].shape[0]
+        shell = orthogroups_tsv[(orthogroups_tsv.sum(axis=1) >= orthogroups_tsv.shape[1] * 0.15) & (
+                orthogroups_tsv.sum(axis=1) < orthogroups_tsv.shape[1] * 0.95)].shape[
             0]
-        cloud = pandas_table[pandas_table.sum(axis=1) < pandas_table.shape[1] * 0.15].shape[0]
+        cloud = orthogroups_tsv[orthogroups_tsv.sum(axis=1) < orthogroups_tsv.shape[1] * 0.15].shape[0]
 
-        total = pandas_table.shape[0]
+        total = orthogroups_tsv.shape[0]
 
         def my_autopct(pct):
             val = int(round(pct * total / 100.0))
@@ -178,59 +186,21 @@ class OrthofinderPlots():
 
         a = plt.pie(
             x=[core, softcore, shell, cloud],
-            labels=['core\n(%d <= strains <= %d)' % (pandas_table.shape[1] * .99, pandas_table.shape[1]),
+            labels=['core\n(%d <= strains <= %d)' % (orthogroups_tsv.shape[1] * .99, orthogroups_tsv.shape[1]),
                     'soft-core\n(%d <= strains < %d)' % (
-                        pandas_table.shape[1] * .95, pandas_table.shape[1] * .99),
-                    'shell\n(%d <= strains < %d)' % (pandas_table.shape[1] * .15, pandas_table.shape[1] * .95),
-                    'cloud\n(strains < %d)' % (pandas_table.shape[1] * .15)],
+                        orthogroups_tsv.shape[1] * .95, orthogroups_tsv.shape[1] * .99),
+                    'shell\n(%d <= strains < %d)' % (orthogroups_tsv.shape[1] * .15, orthogroups_tsv.shape[1] * .95),
+                    'cloud\n(strains < %d)' % (orthogroups_tsv.shape[1] * .15)],
             explode=[0.1, 0.05, 0.02, 0], radius=0.9,
             colors=[(0, 0, 1, float(x) / total) for x in (core, softcore, shell, cloud)],
             autopct=my_autopct
         )
 
-        save_path = os.path.join(output_location, 'pangenome_pie.' + output_format)
+        save_path = os.path.join(out, 'pangenome_pie.' + format)
         plt.savefig(save_path, dpi=300)
         plt.clf()
 
 
 if __name__ == "__main__":
-    import argparse
-
-    # create the top-level parser
-    description = "Create plots from orthofinder outputs"
-    parser = argparse.ArgumentParser(description=description,
-                                     prog='orthofinder_plots.py')
-
-    parser.add_argument('--tree', action='store',
-                        help='Newick Tree file', default='accessory_binary_genes.fa.newick')
-    parser.add_argument('--spreadsheet', action='store',
-                        help='Orthofinder gene presence/absence spreadsheet', default='gene_presence_absence.csv')
-    parser.add_argument('--output_folder', action='store',
-                        help=''
-                             'Where to save the plots [Default: current working dir]', default=os.getcwd())
-
-    parser.add_argument('--no_labels', action='store_true',
-                        default=False,
-                        help='Add node labels to the tree (up to 10 chars)')
-    parser.add_argument('--format',
-                        choices=('png',
-                                 'tiff',
-                                 'pdf',
-                                 'svg'),
-                        default='svg',
-                        help='Output format [Default: svg]')
-
-    args = parser.parse_args()
-
-    op = OrthofinderPlots()
-
-    tree = op.import_tree(args.tree)
-    pandas_table = op.import_orthofinder_table(args.spreadsheet)
-
-    op.create_plots(
-        phylo_object=tree,
-        pandas_table=pandas_table,
-        output_format=args.format,
-        no_labels=args.no_labels,
-        output_location=args.output_folder
-    )
+    import fire
+    fire.Fire(OrthofinderPlots.create_plots)

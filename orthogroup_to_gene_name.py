@@ -5,17 +5,15 @@ from pyfasta import Fasta
 
 class OrthogroupToGeneName():
     @staticmethod
-    def run(path_to_orthogroups_tsv, path_to_fasta_dir, write=False):
-        assert os.path.isfile(path_to_orthogroups_tsv), 'file --path_to_orthogroups_tsv does not exist: {}'.format(
-            path_to_orthogroups_tsv)
-        assert os.path.isdir(path_to_fasta_dir), 'folder --path_to_fasta_dir does not exist: {}'.format(
-            path_to_fasta_dir)
+    def run(orthogroups_tsv: str, fasta_dir: str, write: bool = False):
+        assert os.path.isfile(orthogroups_tsv), F'orthogroups_tsv does not exist: "{orthogroups_tsv}"'
+        assert os.path.isdir(fasta_dir), F'fasta_dir does not exist: "{fasta_dir}"'
         if write:
-            out = os.path.dirname(path_to_orthogroups_tsv)
+            out = os.path.dirname(orthogroups_tsv)
             assert os.path.isdir(out)
 
         # read Orthogroups.tsv
-        df = pd.read_csv(path_to_orthogroups_tsv, sep='\t')
+        df = pd.read_csv(orthogroups_tsv, sep='\t')
         df.set_index('Orthogroup', inplace=True)
 
         def get_gene_name(identifer: str):
@@ -29,8 +27,8 @@ class OrthogroupToGeneName():
             return identifer.split(' ', maxsplit=1)[0]
 
         def get_gene_id_to_name_dict(strain):
-            fasta_file_path = path_to_fasta_dir + '/{}.faa'.format(strain)
-            assert os.path.isfile(fasta_file_path), 'fasta file {} is missing!'.format(fasta_file_path)
+            fasta_file_path = os.path.join(fasta_dir + F'/{strain}.faa')
+            assert os.path.isfile(fasta_file_path), F'fasta file "{fasta_file_path}" is missing!'
             gene_ids = [key for key in Fasta(fasta_file_path).keys()]
             return {get_gene_id(gene_id): get_gene_name(gene_id) for gene_id in gene_ids}
 
@@ -59,7 +57,8 @@ class OrthogroupToGeneName():
         if write:
             out_path = out + '/Orthogroup_BestNames.tsv'
             df_majority.to_csv(path_or_buf=out_path, sep='\t')
-            print('Successfully wrote "{}"'.format(out_path))
+            print(F'Successfully wrote "{out_path}"')
+            return
 
         majority_dict = {orthogroup: majority_name for orthogroup, majority_name in
                          df_majority['Best Gene Name'].iteritems()}
@@ -67,34 +66,6 @@ class OrthogroupToGeneName():
 
 
 if __name__ == "__main__":
-    import argparse
+    import fire  # pip install fire # automated argparse
 
-    parser = argparse.ArgumentParser(
-        description=
-        """
-        Create new file in the same folder as Orthogroups.tsv which contains 
-        the most common gene name for each orthogroup.
-        
-        Usage as class:
-        >>> from orthogroup_to_gene_name import OrthogroupToGeneName
-        >>> OrthogroupToGeneName().run(
-                path_to_orthogroups_tsv=<og_tsv>,
-                path_to_fasta_dir=<fasta_dir>
-                write=<True/False>
-                )
-            # returns dictionary: {'OG0000000': 'best-gene-name', ...}
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "--og_tsv", type=str,
-        help="Path to Orthogroups.tsv, usually located here: OrthoFinder/Results_{date}/Orthogroups/Orthogroups.tsv",
-        required=True
-    )
-    parser.add_argument(
-        "--fasta_dir", type=str, help="Path to folder where FASTA-files are stored. Fasta-files must end with .faa",
-        required=True
-    )
-    args = parser.parse_args()
-
-    OrthogroupToGeneName().run(path_to_orthogroups_tsv=args.og_tsv, path_to_fasta_dir=args.fasta_dir, write=True)
+    fire.Fire(OrthogroupToGeneName.run)

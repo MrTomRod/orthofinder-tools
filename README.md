@@ -7,14 +7,15 @@
 
 ## Setup
 Install dependencies, using your linux package manager or pip:
-* orthogroup_to_gene_name.py: `pandas argparse pyfasta`
+* orthogroup_to_gene_name.py: `pandas pyfasta fire`
 * orthofinder_plots.py: `pandas argparse numpy biopython matplotlib seaborn`
 
 ## Usage
 ### orthogroup_to_gene_name.py
 ```
 # Command line usage:
-python3 orthogroup_to_gene_name.py --og_tsv path/to/Orthogroups.tsv --fasta_dir /path/to/fastas
+
+python3 orthogroup_to_gene_name.py --og_tsv path/to/Orthogroups.tsv --fasta_dir /path/to/fastas --write True
 ```
 
 The product will be a file with the name `Orthogroup_BestNames.tsv` in the same folder as `Orthogroups.tsv`.
@@ -41,12 +42,8 @@ The JSON is a dictionary with key='gene name' -> value=occurrence, for example:
 ```
 # load class
 from orthogroup_to_gene_name import OrthogroupToGeneName
-ogn = OrthogroupToGeneName()
-majority_dict = ogn.run(path_to_orthogroups_tsv=args.og_tsv, path_to_fasta_dir=args.fasta_dir, write=False)
+majority_dict = OrthogroupToGeneName.run(orthogroups_tsv=orthogroups_tsv, fasta_dir=fasta_dir, write=False)
 ```
-
-If `write=True`, the script will create the `Orthogroup_BestNames.tsv` file as above.
-
 `majority_dict` will be a python dict with key='orthogroup' -> value='best name', for example:
 
 ```
@@ -55,8 +52,10 @@ If `write=True`, the script will create the `Orthogroup_BestNames.tsv` file as a
     'OG0000001': 'IS30 family transposase',
     'OG0000002': 'IS5/IS1182 family transposase',
 }
-
 ```
+
+If `write=True`, the script will create the `Orthogroup_BestNames.tsv` file as above and nothing will be returned.
+
 
 ### orthofinder_plots.py
 **Disclaimer:**
@@ -64,7 +63,7 @@ This script is a port of [roary_plots](https://github.com/sanger-pathogens/Roary
 
 ```
 # Command line usage:
-python3 orthofinder_plots.py --tree data/SpeciesTree_rooted.txt --spreadsheet data/Orthogroups.tsv --output_folder=output
+python3 orthofinder_plots.py --tree data/SpeciesTree_rooted.txt --orthogroups_tsv data/Orthogroups.tsv --out=output
 ```
 
 Three files will be created:
@@ -78,14 +77,10 @@ Three files will be created:
 ```
 # load class
 from orthofinder_plots import OrthofinderPlots
-op = OrthofinderPlots()
 
-tree = op.import_tree('path_to_tree')  # a phylo-object
-pandas_table = op.import_orthofinder_table(args.spreadsheet)  # a pandas table
-
-op.create_plots(
-    phylo_object=tree,
-    pandas_table=pandas_table,
+OrthofinderPlots.create_plots(
+    phylo_object='/path/to/SpeciesTree_rooted.txt',
+    pandas_table='/path/to/Orthogroups.tsv',
     output_format='svg',
     no_labels='False',
     output_location='/path/to/output/folder'
