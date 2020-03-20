@@ -1,4 +1,4 @@
-# get_tax_info
+# OrthofinderTools
 
 ## Idea
 
