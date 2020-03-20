@@ -68,9 +68,9 @@ python3 orthofinder_plots.py --tree data/SpeciesTree_rooted.txt --orthogroups_ts
 
 Three files will be created:
 
-![pangenome_frequency.svg](output/pangenome_frequency.svg)
-![pangenome_matrix.svg](output/pangenome_matrix.svg)
-![pangenome_pie.svg](output/pangenome_pie.svg)
+<img src="pangenome_frequency.svg"  width="500">
+<img src="output/pangenome_matrix.svg"  width="500">
+<img src="output/pangenome_pie.svg"  width="500">
 
 
 #### Usage as python class
