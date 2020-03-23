@@ -1,7 +1,6 @@
 import os
 import pandas as pd
-from pyfastx import Fasta
-
+from Bio import SeqIO
 
 class OrthogroupToGeneName():
     @staticmethod
@@ -29,8 +28,8 @@ class OrthogroupToGeneName():
         def get_gene_id_to_name_dict(strain):
             fasta_file_path = os.path.join(fasta_dir + F'/{strain}.faa')
             assert os.path.isfile(fasta_file_path), F'fasta file "{fasta_file_path}" is missing!'
-            fasta = Fasta(fasta_file_path, build_index=True)
-            return {gene.name: gene.description.split(' ', maxsplit=1)[1] for gene in fasta}
+            genes = SeqIO.parse(fasta_file_path, "fasta")
+            return {gene.id: gene.description.split(' ', maxsplit=1)[1] for gene in genes}
 
         def gene_id_to_gene_name(gene_ids, gene_id_to_name):
             if isinstance(gene_ids, float): return []
