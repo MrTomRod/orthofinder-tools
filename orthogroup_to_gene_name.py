@@ -5,16 +5,13 @@ from Bio import SeqIO
 
 class OrthogroupToGeneName():
     @staticmethod
-    def run(n0_tsv: str, fasta_dir: str, file_endings='fasta', out_path=None):
-
+    def run(n0_tsv: str, fasta_dir: str, file_endings='fasta', out_path=None, index_column='HOG'):
         assert os.path.isfile(n0_tsv), F'orthogroups_tsv does not exist: "{n0_tsv}"'
         assert os.path.isdir(fasta_dir), F'fasta_dir does not exist: "{fasta_dir}"'
+        assert index_column in ['OG', 'HOG']
+
         if out_path is not None:
             assert os.path.isdir(os.path.dirname(out_path))
-
-        # read "N0.tsv" and drop extra columns
-        df = pd.read_csv(n0_tsv, sep='\t').drop(columns=['OG', 'Gene Tree Parent Clade'])
-        df.set_index('HOG', inplace=True)
 
         def get_gene_name(identifer: str):
             identifer = identifer.split(' ', maxsplit=1)[1].split(' [', maxsplit=1)[0]
@@ -22,9 +19,6 @@ class OrthogroupToGeneName():
                 return 'hypothetical protein'
             else:
                 return identifer
-
-        def get_gene_id(identifer: str):
-            return identifer.split(' ', maxsplit=1)[0]
 
         def get_gene_id_to_name_dict(strain):
             fasta_file_path = os.path.join(fasta_dir + F'/{strain}.{file_endings}')
@@ -43,7 +37,20 @@ class OrthogroupToGeneName():
                 print("Genes not present in fasta file: \n", gene_ids)
                 return []
 
+        # read "N0.tsv" and drop extra columns
+        df = pd.read_csv(n0_tsv, sep='\t')
+
+        if index_column == 'HOG':
+            df.set_index('HOG', inplace=True)
+            df.drop(columns=['OG', 'Gene Tree Parent Clade'], inplace=True)
+        elif index_column == 'OG':
+            df.set_index('OG', inplace=True)
+            df.drop(columns=['HOG', 'Gene Tree Parent Clade'], inplace=True)
+        else:
+            raise AssertionError(F'index_column must either be HOG or OG, but is {index_column}')
+
         strains = df.columns
+
         for strain in strains:
             gene_id_to_name = get_gene_id_to_name_dict(strain)
             df[strain] = df[strain].apply(gene_id_to_gene_name, args=([gene_id_to_name]))
