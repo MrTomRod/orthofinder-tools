@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 import pandas as pd
 from Bio import SeqIO
@@ -7,16 +5,15 @@ from Bio import SeqIO
 
 class OrthogroupToGeneName():
     @staticmethod
-    def run(orthogroups_tsv: str, fasta_dir: str, write: bool = True):
+    def run(n0_tsv: str, fasta_dir: str, file_endings='fasta', out_path=None):
 
-        assert os.path.isfile(orthogroups_tsv), F'orthogroups_tsv does not exist: "{orthogroups_tsv}"'
+        assert os.path.isfile(n0_tsv), F'orthogroups_tsv does not exist: "{n0_tsv}"'
         assert os.path.isdir(fasta_dir), F'fasta_dir does not exist: "{fasta_dir}"'
-        if write:
-            out = os.path.dirname("./result.tsv")
-            assert os.path.isdir(out)
+        if out_path is not None:
+            assert os.path.isdir(os.path.dirname(out_path))
 
         # read "N0.tsv" and drop extra columns
-        df = pd.read_csv(orthogroups_tsv, sep='\t').drop(columns=['OG', 'Gene Tree Parent Clade'])
+        df = pd.read_csv(n0_tsv, sep='\t').drop(columns=['OG', 'Gene Tree Parent Clade'])
         df.set_index('HOG', inplace=True)
 
         def get_gene_name(identifer: str):
@@ -30,8 +27,8 @@ class OrthogroupToGeneName():
             return identifer.split(' ', maxsplit=1)[0]
 
         def get_gene_id_to_name_dict(strain):
-            fasta_file_path = os.path.join(fasta_dir + F'/{strain}.fasta')
-            assert os.path.isfile(fasta_file_path), F'fasta file "{fasta_file_path}" is missing!'
+            fasta_file_path = os.path.join(fasta_dir + F'/{strain}.{file_endings}')
+            assert os.path.isfile(fasta_file_path), F'{file_endings} file "{fasta_file_path}" is missing!'
             genes = SeqIO.parse(fasta_file_path, "fasta")
             return {gene.id: gene.description.split(' ', maxsplit=1)[1] for gene in genes}
 
@@ -69,8 +66,7 @@ class OrthogroupToGeneName():
         df_majority['Best Gene Name'] = df.apply(majority_vote, axis=1, args=[True])
         df_majority['Gene Name Occurrences'] = df.apply(majority_vote, axis=1)
 
-        if write:
-            out_path = out + '/Orthogroup_BestNames.tsv'
+        if out_path is not None:
             df_majority.to_csv(path_or_buf=out_path, sep='\t')
             print(F'Successfully wrote "{out_path}"')
             return
