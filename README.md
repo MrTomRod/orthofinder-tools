@@ -18,8 +18,8 @@ Install dependencies, using your linux package manager or pip:
 python3 orthogroup_to_gene_name.py \
     --n0_tsv /path/to/fastas/OrthoFinder/Results_Mon00/Phylogenetic_Hierarchical_Orthogroups/N0.tsv \
     --fasta_dir /path/to/fastas/OrthoFinder/fastas \
-    --file_endings=fasta \   # sometimes faa
-    --index_column=HOG \  # OG for orthogroups or HOG for more modern hierarchical orthogroups
+    --file_endings=faa \   # default=fasta; file suffix of the files in fasta_dir
+    --index_column=HOG \  # default=OG; for orthogroups or HOG for more modern hierarchical orthogroups
     --out_path=/path/to/output.tsv
 ```
 
