@@ -15,18 +15,21 @@ Install dependencies, using your linux package manager or pip:
 ```
 # Command line usage:
 
-python3 orthogroup_to_gene_name.py --og_tsv path/to/Orthogroups.tsv --fasta_dir /path/to/fastas --write True
+python3 orthogroup_to_gene_name.py \
+    --n0_tsv /path/to/fastas/OrthoFinder/Results_Mon00/Phylogenetic_Hierarchical_Orthogroups/N0.tsv \
+    --fasta_dir /path/to/fastas/OrthoFinder/fastas \
+    --file_endings=fasta \   # sometimes faa
+    --index_column=HOG \  # OG for orthogroups or HOG for more modern hierarchical orthogroups
+    --out_path=/path/to/output.tsv
 ```
-
-The product will be a file with the name `Orthogroup_BestNames.tsv` in the same folder as `Orthogroups.tsv`.
 
 The tsv looks like this:
 
-|   Orthogroup  |         Best Gene Name        | Gene Name Occurrences |
+|   HOG         |         Best Gene Name        | Gene Name Occurrences |
 | ------------- | ----------------------------- | --------------------- |
-| OG0000000     | amino acid ABC transporter    | {JSON}                |
-| OG0000001     | IS30 family transposase       | {JSON}                |
-| OG0000002     | IS5/IS1182 family transposase | {JSON}                |
+| N0.HOG0000000 | amino acid ABC transporter    | {JSON}                |
+| N0.HOG0000001 | IS30 family transposase       | {JSON}                |
+| N0.HOG0000002 | IS5/IS1182 family transposase | {JSON}                |
 
 The JSON is a dictionary with key='gene name' -> value=occurrence, for example:
 
@@ -39,23 +42,30 @@ The JSON is a dictionary with key='gene name' -> value=occurrence, for example:
 ```
 
 #### Usage as python class
-```
+```python
 # load class
 from orthogroup_to_gene_name import OrthogroupToGeneName
-majority_dict = OrthogroupToGeneName.run(orthogroups_tsv=orthogroups_tsv, fasta_dir=fasta_dir, write=False)
+
+PATH_TO_ORTHOFINDER_FASTAS = '/path/to/OrthoFinder/fastas'
+CURRENT_FOLDER = 'Results_Mon00'
+
+majority_dict = OrthogroupToGeneName(
+    n0_tsv=F'{PATH_TO_ORTHOFINDER_FASTAS}/OrthoFinder/{CURRENT_FOLDER}/Phylogenetic_Hierarchical_Orthogroups/N0.tsv',
+    index_column='OG'
+).run(
+    fasta_dir=PATH_TO_ORTHOFINDER_FASTAS,
+    file_endings='faa',
+)
 ```
 `majority_dict` will be a python dict with key='orthogroup' -> value='best name', for example:
 
 ```
 {
-    'OG0000000': 'amino acid ABC transporter',
-    'OG0000001': 'IS30 family transposase',
-    'OG0000002': 'IS5/IS1182 family transposase',
+    'N0.HOG0000000': 'amino acid ABC transporter',
+    'N0.HOG0000001': 'IS30 family transposase',
+    'N0.HOG0000002': 'IS5/IS1182 family transposase',
 }
 ```
-
-If `write=True`, the script will create the `Orthogroup_BestNames.tsv` file as above and nothing will be returned.
-
 
 ### orthofinder_plots.py
 **Disclaimer:**
