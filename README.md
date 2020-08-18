@@ -18,9 +18,9 @@ Install dependencies, using your linux package manager or pip:
 python3 orthogroup_to_gene_name.py \
     --n0_tsv /path/to/fastas/OrthoFinder/Results_Mon00/Phylogenetic_Hierarchical_Orthogroups/N0.tsv \
     --fasta_dir /path/to/fastas/OrthoFinder/fastas \
-    --file_endings=faa \   # default=fasta; file suffix of the files in fasta_dir
+    --file_endings=faa \  # default=fasta; file suffix of the files in fasta_dir
     --index_column=HOG \  # default=OG; for orthogroups or HOG for more modern hierarchical orthogroups
-    --out_path=/path/to/output.tsv
+    --out=/path/to/output.tsv
 ```
 
 The tsv looks like this:
@@ -33,7 +33,7 @@ The tsv looks like this:
 
 The JSON is a dictionary with key='gene name' -> value=occurrence, for example:
 
-```
+```json5
 {
     'Integrase core domain protein': 47,
     'hypothetical protein': 15,
@@ -59,7 +59,7 @@ majority_dict = OrthogroupToGeneName(
 ```
 `majority_dict` will be a python dict with key='orthogroup' -> value='best name', for example:
 
-```
+```json5
 {
     'N0.HOG0000000': 'amino acid ABC transporter',
     'N0.HOG0000001': 'IS30 family transposase',
@@ -84,15 +84,15 @@ Three files will be created:
 
 
 #### Usage as python class
-```
+```python
 # load class
 from orthofinder_plots import OrthofinderPlots
 
 OrthofinderPlots.create_plots(
-    phylo_object='/path/to/SpeciesTree_rooted.txt',
-    pandas_table='/path/to/Orthogroups.tsv',
-    output_format='svg',
-    no_labels='False',
-    output_location='/path/to/output/folder'
+    tree='/path/to/SpeciesTree_rooted.txt',
+    orthogroups_tsv='/path/to/Orthogroups.tsv',
+    format='svg',
+    no_labels=False,
+    out='/path/to/output/folder'
 )
 ```

@@ -26,10 +26,10 @@ class OrthogroupToGeneName:
         self.majority_df = None  # use run to generate
         self.majority_dict = None  # use run to generate
 
-    def run(self, fasta_dir: str, file_endings='fasta', out_path=None):
+    def run(self, fasta_dir: str, file_endings='fasta', out=None):
         assert os.path.isdir(fasta_dir), F'fasta_dir does not exist: "{fasta_dir}"'
-        if out_path is not None:
-            assert os.path.isdir(os.path.dirname(out_path))
+        if out is not None:
+            assert os.path.isdir(os.path.dirname(out))
 
         self.translated_df = self.orig_df.__deepcopy__()
 
@@ -68,9 +68,9 @@ class OrthogroupToGeneName:
         self.majority_df = pd.DataFrame(index=self.translated_df.index)
         self.majority_df[['Best Gene Name', 'Gene Name Occurrences']] = self.translated_df.apply(lambda row: pd.Series(majority_vote(row)), axis=1)
 
-        if out_path is not None:
-            self.majority_df.to_csv(path_or_buf=out_path, sep='\t')
-            print(F'Successfully wrote "{out_path}"')
+        if out is not None:
+            self.majority_df.to_csv(path_or_buf=out, sep='\t')
+            print(F'Successfully wrote "{out}"')
             return
 
         self.majority_dict = {
