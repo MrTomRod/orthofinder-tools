@@ -3,7 +3,6 @@ import logging
 import pandas as pd
 from Bio import SeqIO
 from collections import Counter
-from operator import itemgetter
 
 
 class OrthogroupToGeneName:

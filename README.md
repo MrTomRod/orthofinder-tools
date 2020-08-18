@@ -7,7 +7,7 @@
 
 ## Setup
 Install dependencies, using your linux package manager or pip:
-* orthogroup_to_gene_name.py: `pandas pyfasta fire`
+* orthogroup_to_gene_name.py: `pandas biopython fire`
 * orthofinder_plots.py: `pandas argparse numpy biopython matplotlib seaborn`
 
 ## Usage
