@@ -16,14 +16,14 @@ Install dependencies, using your linux package manager or pip:
 # Command line usage:
 
 python3 orthogroup_to_gene_name.py \
-    --n0_tsv /path/to/fastas/OrthoFinder/Results_Mon00/Phylogenetic_Hierarchical_Orthogroups/N0.tsv \
-    --fasta_dir /path/to/fastas/OrthoFinder/fastas \
+    --orthofinder_tsv /path/to/N0_or_Orthogroups.tsv \
+    --n0=True \  # True for N0.tsv, False for Orthogroups.tsv
+    --fasta_dir /path/to/fastas \
+    --out=outfile.tsv \
     --file_endings=faa \  # default=fasta; file suffix of the files in fasta_dir
-    --index_column=HOG \  # default=OG; for orthogroups or HOG for more modern hierarchical orthogroups
-    --out=/path/to/output.tsv
 ```
 
-The tsv looks like this:
+The resulting tsv looks like this:
 
 |   HOG         |         Best Gene Name        | Gene Name Occurrences |
 | ------------- | ----------------------------- | --------------------- |
@@ -49,15 +49,15 @@ from orthogroup_to_gene_name import OrthogroupToGeneName
 PATH_TO_ORTHOFINDER_FASTAS = '/path/to/OrthoFinder/fastas'
 CURRENT_FOLDER = 'Results_Mon00'
 
-majority_dict = OrthogroupToGeneName(
-    n0_tsv=F'{PATH_TO_ORTHOFINDER_FASTAS}/OrthoFinder/{CURRENT_FOLDER}/Phylogenetic_Hierarchical_Orthogroups/N0.tsv',
-    index_column='OG'
-).run(
+otg = OrthogroupToGeneName(
     fasta_dir=PATH_TO_ORTHOFINDER_FASTAS,
     file_endings='faa',
 )
+otg.load_hog(
+    n0_tsv=F'{PATH_TO_ORTHOFINDER_FASTAS}/OrthoFinder/{CURRENT_FOLDER}/Phylogenetic_Hierarchical_Orthogroups/N0.tsv'
+)
 ```
-`majority_dict` will be a python dict with key='orthogroup' -> value='best name', for example:
+`otg.majority_dict` will be a python dict with key='orthogroup' -> value='best name', for example:
 
 ```json5
 {
@@ -65,6 +65,27 @@ majority_dict = OrthogroupToGeneName(
     'N0.HOG0000001': 'IS30 family transposase',
     'N0.HOG0000002': 'IS5/IS1182 family transposase',
 }
+```
+
+`otg.save_majority_df(outfile='path/to/outfile.tsv)` writes the following file:
+```text
+HOG Best Gene Name  Gene Name Occurrences
+N0.HOG0000000   amino acid ABC transporter Counter({'amino acid ABC transporter': 43})
+...
+```
+
+`otg.save_orthogroup_to_gene_ids(outfile='path/to/outfile.tsv)` writes the following file (no header):
+```text
+N0.HOG0000000   gene_1  gene_2
+N0.HOG0000001   gene_3  gene_4  gene_5
+...
+```
+
+`otg.save_orthogroup_to_gene_ids(outfile='path/to/outfile.tsv)` writes the following file (no header):
+```text
+N0.HOG0000000	amino acid ABC transporter ATP-binding protein
+N0.HOG0000001	ATP-binding cassette domain-containing protein
+...
 ```
 
 ### orthofinder_plots.py

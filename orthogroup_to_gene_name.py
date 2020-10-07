@@ -128,7 +128,7 @@ if __name__ == "__main__":
     import fire  # pip install fire # automated argparse
 
 
-    def bootstrap(orthofinder_tsv: str, fasta_dir: str, out_path: str, n0: bool = True, file_endings='fasta'):
+    def bootstrap(orthofinder_tsv: str, fasta_dir: str, out: str, n0: bool = True, file_endings='fasta'):
         otg = OrthogroupToGeneName(
             fasta_dir=fasta_dir,
             file_endings=file_endings
@@ -143,6 +143,6 @@ if __name__ == "__main__":
                 og_tsv=orthofinder_tsv
             )
 
-        otg.save_majority_df(out_path)
+        otg.save_majority_df(out)
 
-        fire.Fire(bootstrap)
+    fire.Fire(bootstrap)
