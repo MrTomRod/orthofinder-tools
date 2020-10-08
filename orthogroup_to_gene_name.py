@@ -35,14 +35,14 @@ class OrthogroupToGeneName:
         """
         Writes the following file (no header):
 
-        N0.HOG0000000   gene_1  gene_2
-        N0.HOG0000001   gene_3  gene_4  gene_5
+        N0.HOG0000000   gene_1, gene_2
+        N0.HOG0000001   gene_3, gene_4, gene_5
         ...
         """
         with open(out_file, 'w') as f:
             for orthogroup, row in self.gene_ids_df.iterrows():
                 gene_ids = [gene_id for gene_ids in row for gene_id in gene_ids]
-                gene_ids = '\t'.join(gene_ids)
+                gene_ids = ', '.join(gene_ids)
                 f.write(F'{orthogroup}\t{gene_ids}\n')
 
     def save_orthogroup_to_best_name(self, out_file: str):
