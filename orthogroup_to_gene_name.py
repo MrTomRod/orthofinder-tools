@@ -67,7 +67,13 @@ class OrthogroupToGeneName:
         assert os.path.isfile(og_tsv), F'og_tsv does not exist: "{og_tsv}"'
 
         # read "Orthogroups.tsv"
-        self.gene_ids_df = pd.read_csv(og_tsv, sep='\t')
+        self.gene_ids_df = pd.read_csv(og_tsv, sep='\t', dtype=str)
+
+        # sanity checks
+        assert 'Orthogroup' in self.gene_ids_df.columns, \
+            f'The file {og_tsv} does not appear to be a valid Orthogroup.tsv: ' \
+            f'The column "Orthogroup" is missing. Try setting --n0=False'
+
         self.gene_ids_df.set_index('Orthogroup', inplace=True)
         self.gene_ids_df = self.gene_ids_df.applymap(lambda x: [] if pd.isnull(x) else x.split(', '))
 
@@ -77,7 +83,13 @@ class OrthogroupToGeneName:
         assert os.path.isfile(n0_tsv), F'n0_tsv does not exist: "{n0_tsv}"'
 
         # read "N0.tsv" and drop extra columns
-        self.gene_ids_df = pd.read_csv(n0_tsv, sep='\t')
+        self.gene_ids_df = pd.read_csv(n0_tsv, sep='\t', dtype=str)
+
+        # sanity checks
+        for col in ['HOG', 'OG', 'Gene Tree Parent Clade']:
+            assert col in self.gene_ids_df.columns, f'The file {n0_tsv} does not appear to be a valid N0.tsv: ' \
+                                                    f'The column "{col}" is missing. Try setting --n0=False'
+
         self.gene_ids_df.set_index('HOG', inplace=True)
         self.gene_ids_df.drop(columns=['OG', 'Gene Tree Parent Clade'], inplace=True)
         self.gene_ids_df = self.gene_ids_df.applymap(lambda x: [] if pd.isnull(x) else x.split(', '))
@@ -90,11 +102,13 @@ class OrthogroupToGeneName:
         self.gene_names_df = self.gene_ids_df.__deepcopy__()
         for strain in self.strains:
             gene_id_to_name = self.__get_gene_id_to_name_dict(strain)
-            self.gene_names_df[strain] = self.gene_names_df[strain].apply(lambda ids: [gene_id_to_name[id] for id in ids])
+            self.gene_names_df[strain] = self.gene_names_df[strain].apply(
+                lambda ids: [gene_id_to_name[id] for id in ids])
 
         self.majority_df = pd.DataFrame(index=self.gene_names_df.index)
-        self.majority_df[['Best Gene Name', 'Gene Name Occurrences']] = self.gene_names_df.apply(lambda row: pd.Series(self.__majority_vote(row)),
-                                                                                                 axis=1)
+        self.majority_df[['Best Gene Name', 'Gene Name Occurrences']] = self.gene_names_df.apply(
+            lambda row: pd.Series(self.__majority_vote(row)),
+            axis=1)
 
     def __majority_vote(self, row):
         """ Get gene names set per HOG and count them. Disregards names with eAED in description,
@@ -106,7 +120,8 @@ class OrthogroupToGeneName:
 
         names_to_count = Counter(all_names)
 
-        return names_to_count.most_common(1)[0][0], str(names_to_count)  # return best gene name and gene name occurrences as string
+        return names_to_count.most_common(1)[0][0], str(
+            names_to_count)  # return best gene name and gene name occurrences as string
 
     def __get_gene_id_to_name_dict(self, strain):
         fasta_file_path = os.path.join(self.fasta_dir + F'/{strain}.{self.file_endings}')
@@ -144,5 +159,6 @@ if __name__ == "__main__":
             )
 
         otg.save_majority_df(out)
+
 
     fire.Fire(bootstrap)
