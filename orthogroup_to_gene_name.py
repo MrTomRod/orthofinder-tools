@@ -129,7 +129,12 @@ class OrthogroupToGeneName:
         genes = SeqIO.parse(fasta_file_path, "fasta")
 
         def extract_description(gene):
-            description = gene.description.split(' ', maxsplit=1)[1]
+            description = gene.description.split(' ', maxsplit=1)
+            assert len(description) == 2, \
+                F'Failed to extract description for strain={strain}:\n' \
+                F'gene.description={gene.description}\n' \
+                F'description={description}'
+            description = description[1]
             if description.endswith(']'):
                 # remove species description
                 return description.rsplit(' [', maxsplit=1)[0]
