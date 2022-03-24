@@ -132,6 +132,7 @@ class OrthogroupToGeneName:
             description = gene.description.split(' ', maxsplit=1)
             assert len(description) == 2, \
                 F'Failed to extract description for strain={strain}:\n' \
+                F'gene.id={gene.id}\n' \
                 F'gene.description={gene.description}\n' \
                 F'description={description}'
             description = description[1]
