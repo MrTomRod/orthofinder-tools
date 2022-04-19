@@ -24,7 +24,7 @@ MIDVNKFESMQIGLASPDKIRMWSYGEVKKPETINYRTLKPEKDGLFDERIFGPTKDYECACGKYKRIRY
 ...
 ```
 
-From this protein, `DNA-directed RNA polymerase subunit beta` will be extracted.
+From this protein, `DNA-directed RNA polymerase subunit beta'` will be extracted.
 
 #### Command line usage
 
