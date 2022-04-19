@@ -2,7 +2,7 @@
 
 ## Idea
 
-* Calculate the most common gene name of an orthogroup by majority vote: `orthogroup_to_gene_name.py`
+* Calculate the most common gene name of each orthogroup by majority vote: `orthogroup_to_gene_name.py`
 * Create plots analogous to roary_plots: `orthofinder_plots.py`
 
 ## Setup
@@ -11,10 +11,24 @@ Install dependencies, using your linux package manager or pip:
 * orthofinder_plots.py: `pandas argparse numpy biopython matplotlib seaborn`
 
 ## Usage
-### orthogroup_to_gene_name.py
-```
-# Command line usage:
 
+### orthogroup_to_gene_name.py
+
+#### Prerequisites
+
+Your FASTA sequences must have some description, e.g.:
+
+```text
+>gnl|extdb|STRAIN-XY_000001 DNA-directed RNA polymerase subunit beta' [Pediococcus stilesii]
+MIDVNKFESMQIGLASPDKIRMWSYGEVKKPETINYRTLKPEKDGLFDERIFGPTKDYECACGKYKRIRY
+...
+```
+
+From this protein, `DNA-directed RNA polymerase subunit beta` will be extracted.
+
+#### Command line usage
+
+```
 python3 orthogroup_to_gene_name.py \
     --orthofinder_tsv /path/to/N0_or_Orthogroups.tsv \
     --n0=True \  # True for N0.tsv, False for Orthogroups.tsv
