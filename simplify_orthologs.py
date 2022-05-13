@@ -1,9 +1,9 @@
 import os
-from orthogroup_to_gene_name import OrthogroupToGeneName
+from orthofinder_tools.orthogroup_to_gene_name import OrthogroupToGeneName
 
 
 def simplify_orthologs(orthofinder_tsv: str, fasta_dir: str, out_dir: str, n0: bool = True, file_endings='fasta'):
-    assert os.path.isdir(out_dir)
+    assert os.path.isdir(out_dir), f'Does not exist: {out_dir}'
 
     otg = OrthogroupToGeneName(
         fasta_dir=fasta_dir,

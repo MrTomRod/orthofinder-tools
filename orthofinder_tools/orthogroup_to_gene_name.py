@@ -1,12 +1,16 @@
-import os
+import os, sys
 import logging
 import pandas as pd
 from Bio import SeqIO
 from collections import Counter
 
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+from utils import load_og, load_hog
+
 
 class OrthogroupToGeneName:
     def __init__(self, fasta_dir: str, file_endings='fasta'):
+        fasta_dir = os.path.abspath(fasta_dir)
         assert os.path.isdir(fasta_dir), F'fasta_dir does not exist: "{fasta_dir}"'
         self.fasta_dir = fasta_dir
         self.file_endings = file_endings
@@ -28,6 +32,7 @@ class OrthogroupToGeneName:
         N0.HOG0000000   amino acid ABC transporter Counter({'amino acid ABC transporter': 43})
         ...
         """
+        out_file = os.path.abspath(out_file)
         assert hasattr(self, 'majority_df'), F'Load Orthogroups.tsv or N0.tsv first!'
         self.majority_df.to_csv(path_or_buf=out_file, sep='\t')
 
@@ -39,6 +44,7 @@ class OrthogroupToGeneName:
         N0.HOG0000001   gene_3, gene_4, gene_5
         ...
         """
+        out_file = os.path.abspath(out_file)
         with open(out_file, 'w') as f:
             for orthogroup, row in self.gene_ids_df.iterrows():
                 gene_ids = [gene_id for gene_ids in row for gene_id in gene_ids]
@@ -53,7 +59,7 @@ class OrthogroupToGeneName:
         N0.HOG0000001	ATP-binding cassette domain-containing protein
         ...
         """
-
+        out_file = os.path.abspath(out_file)
         self.majority_df.drop(
             columns=['Gene Name Occurrences'],
             inplace=False
@@ -64,36 +70,11 @@ class OrthogroupToGeneName:
         )
 
     def load_og(self, og_tsv: str):
-        assert os.path.isfile(og_tsv), F'og_tsv does not exist: "{og_tsv}"'
-
-        # read "Orthogroups.tsv"
-        self.gene_ids_df = pd.read_csv(og_tsv, sep='\t', dtype=str)
-
-        # sanity checks
-        assert 'Orthogroup' in self.gene_ids_df.columns, \
-            f'The file {og_tsv} does not appear to be a valid Orthogroup.tsv: ' \
-            f'The column "Orthogroup" is missing. Try setting --n0=False'
-
-        self.gene_ids_df.set_index('Orthogroup', inplace=True)
-        self.gene_ids_df = self.gene_ids_df.applymap(lambda x: [] if pd.isnull(x) else x.split(', '))
-
+        self.gene_ids_df = load_og(og_tsv, result_type='gene-list')
         self.__load_gene_names()
 
     def load_hog(self, n0_tsv: str):
-        assert os.path.isfile(n0_tsv), F'n0_tsv does not exist: "{n0_tsv}"'
-
-        # read "N0.tsv" and drop extra columns
-        self.gene_ids_df = pd.read_csv(n0_tsv, sep='\t', dtype=str)
-
-        # sanity checks
-        for col in ['HOG', 'OG', 'Gene Tree Parent Clade']:
-            assert col in self.gene_ids_df.columns, f'The file {n0_tsv} does not appear to be a valid N0.tsv: ' \
-                                                    f'The column "{col}" is missing. Try setting --n0=False'
-
-        self.gene_ids_df.set_index('HOG', inplace=True)
-        self.gene_ids_df.drop(columns=['OG', 'Gene Tree Parent Clade'], inplace=True)
-        self.gene_ids_df = self.gene_ids_df.applymap(lambda x: [] if pd.isnull(x) else x.split(', '))
-
+        self.gene_ids_df = load_hog(n0_tsv, result_type='gene-list')
         self.__load_gene_names()
 
     def __load_gene_names(self):
@@ -145,26 +126,17 @@ class OrthogroupToGeneName:
         return {gene.id: extract_description(gene) for gene in genes}
 
 
+def main(orthofinder_tsv: str, fasta_dir: str, out: str, n0: bool = True, file_endings='fasta'):
+    otg = OrthogroupToGeneName(fasta_dir=fasta_dir, file_endings=file_endings)
+    if n0:
+        otg.load_hog(n0_tsv=orthofinder_tsv)
+    else:
+        otg.load_og(og_tsv=orthofinder_tsv)
+
+    otg.save_majority_df(out)
+
+
 if __name__ == "__main__":
     import fire  # pip install fire # automated argparse
 
-
-    def bootstrap(orthofinder_tsv: str, fasta_dir: str, out: str, n0: bool = True, file_endings='fasta'):
-        otg = OrthogroupToGeneName(
-            fasta_dir=fasta_dir,
-            file_endings=file_endings
-        )
-
-        if n0:
-            otg.load_hog(
-                n0_tsv=orthofinder_tsv
-            )
-        else:
-            otg.load_og(
-                og_tsv=orthofinder_tsv
-            )
-
-        otg.save_majority_df(out)
-
-
-    fire.Fire(bootstrap)
+    fire.Fire(main)

@@ -56,9 +56,10 @@ The JSON is a dictionary with key='gene name' -> value=occurrence, for example:
 ```
 
 #### Usage as python class
+
 ```python
 # load class
-from orthogroup_to_gene_name import OrthogroupToGeneName
+from orthofinder_tools.orthogroup_to_gene_name import OrthogroupToGeneName
 
 PATH_TO_ORTHOFINDER_FASTAS = '/path/to/OrthoFinder/fastas'
 CURRENT_FOLDER = 'Results_Mon00'
@@ -119,9 +120,10 @@ Three files will be created:
 
 
 #### Usage as python class
+
 ```python
 # load class
-from orthofinder_plots import OrthofinderPlots
+from orthofinder_tools.orthofinder_plots import OrthofinderPlots
 
 OrthofinderPlots.create_plots(
     tree='/path/to/SpeciesTree_rooted.txt',
