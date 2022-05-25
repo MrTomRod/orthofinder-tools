@@ -23,7 +23,7 @@ class OrthogroupToGeneName:
             in self.majority_df['Best Gene Name'].iteritems()
         }
 
-    def save_majority_df(self, out_file: str):
+    def save_majority_df(self, out_file: str, header: bool = True):
         """
         Writes the following file:
 
@@ -33,7 +33,7 @@ class OrthogroupToGeneName:
         """
         out_file = os.path.abspath(out_file)
         assert hasattr(self, 'majority_df'), F'Load Orthogroups.tsv or N0.tsv first!'
-        self.majority_df.to_csv(path_or_buf=out_file, sep='\t')
+        self.majority_df.to_csv(path_or_buf=out_file, sep='\t', header=header)
 
     def save_orthogroup_to_gene_ids(self, out_file: str):
         """
@@ -50,10 +50,11 @@ class OrthogroupToGeneName:
                 gene_ids = ', '.join(gene_ids)
                 f.write(F'{orthogroup}\t{gene_ids}\n')
 
-    def save_orthogroup_to_best_name(self, out_file: str):
+    def save_orthogroup_to_best_name(self, out_file: str, header: bool = False):
         """
-        Writes the following file (no header):
+        Writes the following file:
 
+        Gene            Annotation
         N0.HOG0000000	amino acid ABC transporter ATP-binding protein
         N0.HOG0000001	ATP-binding cassette domain-containing protein
         ...
@@ -65,7 +66,8 @@ class OrthogroupToGeneName:
         ).to_csv(
             path_or_buf=out_file,
             sep='\t',
-            header=False
+            index_label=['Gene'],
+            header=['Annotation']
         )
 
     def load_og(self, og_tsv: str):
@@ -126,7 +128,15 @@ class OrthogroupToGeneName:
         return {gene.id: extract_description(gene) for gene in genes}
 
 
-def cli(orthogroups_tsv: str, fasta_dir: str, out: str, hog: bool = True, file_endings='fasta', simple: bool = True):
+def cli(
+        orthogroups_tsv: str,
+        fasta_dir: str,
+        out: str,
+        hog: bool = True,
+        file_endings='fasta',
+        simple: bool = True,
+        header: bool = False,
+):
     """
     Calculate the most common gene name of each orthogroup by majority vote
 
@@ -137,6 +147,7 @@ def cli(orthogroups_tsv: str, fasta_dir: str, out: str, hog: bool = True, file_e
     :param file_endings: file endings of the FASTA files (e.g. "faa", "fasta", "FASTA", etc)
     :param simple: if True: output maps orthogenes to best names; if False: orthogenes are mapped
     to best names and majority dict
+    :param header: if True: add header in output file
     """
     otg = OrthogroupToGeneName(fasta_dir=fasta_dir, file_endings=file_endings)
     if hog:
@@ -145,9 +156,9 @@ def cli(orthogroups_tsv: str, fasta_dir: str, out: str, hog: bool = True, file_e
         otg.load_og(og_tsv=orthogroups_tsv)
 
     if simple:
-        otg.save_orthogroup_to_best_name(out)
+        otg.save_orthogroup_to_best_name(out, header=header)
     else:
-        otg.save_majority_df(out)
+        otg.save_majority_df(out, header=header)
 
 
 def main():

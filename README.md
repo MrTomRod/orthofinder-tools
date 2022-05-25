@@ -36,11 +36,12 @@ annotate_orthogroups \
     --orthogroups_tsv /path/to/N0_or_Orthogroups.tsv \
     --hog True \
     --fasta_dir /path/to/fastas \
+    --file_endings faa \
     --out outfile.tsv \
-    --file_endings faa
+    --simple True
 ```
 
-The resulting tsv looks like this:
+If `--simple=False` resulting tsv looks like this:
 
 |   HOG         |         Best Gene Name        | Gene Name Occurrences |
 | ------------- | ----------------------------- | --------------------- |
@@ -57,6 +58,15 @@ The JSON is a dictionary with key='gene name' -> value=occurrence, for example:
   'IS30 family transposase': 126
 }
 ```
+
+If `--simple=True` resulting tsv looks like this (no header):
+
+|               |                               |
+|---------------|-------------------------------|
+| N0.HOG0000000 | amino acid ABC transporter    |
+| N0.HOG0000001 | IS30 family transposase       |
+| N0.HOG0000002 | IS5/IS1182 family transposase |
+
 
 #### Usage as python class
 
@@ -127,7 +137,6 @@ Three files will be created:
 <img src="output/pangenome_frequency.svg"  width="80%"><br>
 <img src="output/pangenome_matrix.svg"  width="80%"><br>
 <img src="output/pangenome_pie.svg"  width="80%"><br>
-
 
 #### Usage as python class
 

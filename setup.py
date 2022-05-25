@@ -14,7 +14,7 @@ README = (HERE / 'README.md').read_text()
 
 setup(
     name='orthofinder-tools',
-    version='0.0.1',
+    version='0.0.2',
     description='Annotate orthogenes and create Roary-like plots',
     long_description=README,
     long_description_content_type='text/markdown',
