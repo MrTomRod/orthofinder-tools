@@ -17,7 +17,7 @@ def get_apply_fn(result_type: str):
 
 
 def load_og(og_tsv: str, result_type: str = 'gene-list'):
-    og_tsv = os.path.abspath(og_tsv)
+    og_tsv = os.path.abspath(os.path.expanduser(og_tsv))
     assert os.path.isfile(og_tsv), F'og_tsv does not exist: "{og_tsv}"'
 
     apply_fn = get_apply_fn(result_type)
@@ -28,7 +28,7 @@ def load_og(og_tsv: str, result_type: str = 'gene-list'):
     # sanity checks
     assert 'Orthogroup' in gene_ids_df.columns, \
         f'The file {og_tsv} does not appear to be a valid Orthogroup.tsv: ' \
-        f'The column "Orthogroup" is missing. Try setting --n0=False'
+        f'The column "Orthogroup" is missing. Try setting --hog=False'
 
     gene_ids_df.set_index('Orthogroup', inplace=True)
 
@@ -37,19 +37,19 @@ def load_og(og_tsv: str, result_type: str = 'gene-list'):
     return gene_ids_df
 
 
-def load_hog(n0_tsv: str, result_type: str = 'gene-list'):
-    n0_tsv = os.path.abspath(n0_tsv)
-    assert os.path.isfile(n0_tsv), F'n0_tsv does not exist: "{n0_tsv}"'
+def load_hog(hog_tsv: str, result_type: str = 'gene-list'):
+    hog_tsv = os.path.abspath(os.path.expanduser(hog_tsv))
+    assert os.path.isfile(hog_tsv), F'hog_tsv does not exist: "{hog_tsv}"'
 
     apply_fn = get_apply_fn(result_type)
 
     # read "N0.tsv" and drop extra columns
-    gene_ids_df = pd.read_csv(n0_tsv, sep='\t', dtype=str)
+    gene_ids_df = pd.read_csv(hog_tsv, sep='\t', dtype=str)
 
     # sanity checks
     for col in ['HOG', 'OG', 'Gene Tree Parent Clade']:
-        assert col in gene_ids_df.columns, f'The file {n0_tsv} does not appear to be a valid N0.tsv: ' \
-                                           f'The column "{col}" is missing. Try setting --n0=False'
+        assert col in gene_ids_df.columns, f'The file {hog_tsv} does not appear to be a valid N0.tsv: ' \
+                                           f'The column "{col}" is missing. Try setting --hog=False'
 
     gene_ids_df.set_index('HOG', inplace=True)
 

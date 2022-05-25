@@ -1,5 +1,8 @@
-__pycache__/
-.idea/
+__pycache__
+orthofinder_tools.egg-info
+build
+dist
+.idea
 *.svg
 data
 output

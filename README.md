@@ -1,18 +1,19 @@
-# OrthofinderTools
+# OrthoFinder Tools
 
 ## Idea
 
-* Calculate the most common gene name of each orthogroup by majority vote: `orthogroup_to_gene_name.py`
-* Create plots analogous to roary_plots: `orthofinder_plots.py`
+* Calculate the most common gene name of each orthogroup by majority vote: `annotate_orthogroups`
+* Create plots analogous to roary_plots: `orthofinder_plots`
 
 ## Setup
-Install dependencies, using your linux package manager or pip:
-* orthogroup_to_gene_name.py: `pandas biopython fire`
-* orthofinder_plots.py: `pandas argparse numpy biopython matplotlib seaborn`
+
+```shell
+pip install orthofinder-tools
+```
 
 ## Usage
 
-### orthogroup_to_gene_name.py
+### annotate_orthogroups
 
 #### Prerequisites
 
@@ -29,12 +30,14 @@ From this protein, `DNA-directed RNA polymerase subunit beta'` will be extracted
 #### Command line usage
 
 ```
-python3 orthogroup_to_gene_name.py \
-    --orthofinder_tsv /path/to/N0_or_Orthogroups.tsv \
-    --n0=True \  # True for N0.tsv, False for Orthogroups.tsv
+annotate_orthogroups --help
+
+annotate_orthogroups \
+    --orthogroups_tsv /path/to/N0_or_Orthogroups.tsv \
+    --hog True \
     --fasta_dir /path/to/fastas \
-    --out=outfile.tsv \
-    --file_endings=faa \  # default=fasta; file suffix of the files in fasta_dir
+    --out outfile.tsv \
+    --file_endings faa
 ```
 
 The resulting tsv looks like this:
@@ -49,9 +52,9 @@ The JSON is a dictionary with key='gene name' -> value=occurrence, for example:
 
 ```json5
 {
-    'Integrase core domain protein': 47,
-    'hypothetical protein': 15,
-    'IS30 family transposase': 126
+  'Integrase core domain protein': 47,
+  'hypothetical protein': 15,
+  'IS30 family transposase': 126
 }
 ```
 
@@ -59,7 +62,7 @@ The JSON is a dictionary with key='gene name' -> value=occurrence, for example:
 
 ```python
 # load class
-from orthofinder_tools.orthogroup_to_gene_name import OrthogroupToGeneName
+from orthofinder_tools import OrthogroupToGeneName
 
 PATH_TO_ORTHOFINDER_FASTAS = '/path/to/OrthoFinder/fastas'
 CURRENT_FOLDER = 'Results_Mon00'
@@ -69,20 +72,22 @@ otg = OrthogroupToGeneName(
     file_endings='faa',
 )
 otg.load_hog(
-    n0_tsv=F'{PATH_TO_ORTHOFINDER_FASTAS}/OrthoFinder/{CURRENT_FOLDER}/Phylogenetic_Hierarchical_Orthogroups/N0.tsv'
+    hog_tsv=F'{PATH_TO_ORTHOFINDER_FASTAS}/OrthoFinder/{CURRENT_FOLDER}/Phylogenetic_Hierarchical_Orthogroups/N0.tsv'
 )
 ```
+
 `otg.majority_dict` will be a python dict with key='orthogroup' -> value='best name', for example:
 
 ```json5
 {
-    'N0.HOG0000000': 'amino acid ABC transporter',
-    'N0.HOG0000001': 'IS30 family transposase',
-    'N0.HOG0000002': 'IS5/IS1182 family transposase',
+  'N0.HOG0000000': 'amino acid ABC transporter',
+  'N0.HOG0000001': 'IS30 family transposase',
+  'N0.HOG0000002': 'IS5/IS1182 family transposase',
 }
 ```
 
 `otg.save_majority_df(outfile='path/to/outfile.tsv)` writes the following file:
+
 ```text
 HOG Best Gene Name  Gene Name Occurrences
 N0.HOG0000000   amino acid ABC transporter Counter({'amino acid ABC transporter': 43})
@@ -90,6 +95,7 @@ N0.HOG0000000   amino acid ABC transporter Counter({'amino acid ABC transporter'
 ```
 
 `otg.save_orthogroup_to_gene_ids(outfile='path/to/outfile.tsv)` writes the following file (no header):
+
 ```text
 N0.HOG0000000   gene_1  gene_2
 N0.HOG0000001   gene_3  gene_4  gene_5
@@ -97,19 +103,23 @@ N0.HOG0000001   gene_3  gene_4  gene_5
 ```
 
 `otg.save_orthogroup_to_gene_ids(outfile='path/to/outfile.tsv)` writes the following file (no header):
+
 ```text
 N0.HOG0000000	amino acid ABC transporter ATP-binding protein
 N0.HOG0000001	ATP-binding cassette domain-containing protein
 ...
 ```
 
-### orthofinder_plots.py
+### orthofinder_plots
+
 **Disclaimer:**
-This script is a port of [roary_plots](https://github.com/sanger-pathogens/Roary/tree/master/contrib/roary_plots) by Marco Galardini (marco@ebi.ac.uk).
+This script is a port of [roary_plots](https://github.com/sanger-pathogens/Roary/tree/master/contrib/roary_plots) by
+Marco Galardini (marco@ebi.ac.uk).
 
 ```
 # Command line usage:
-python3 orthofinder_plots.py --tree data/SpeciesTree_rooted.txt --orthogroups_tsv data/Orthogroups.tsv --out=output
+orthofinder_plots --help
+orthofinder_plots --tree data/SpeciesTree_rooted.txt --orthogroups_tsv data/Orthogroups.tsv --out output
 ```
 
 Three files will be created:
@@ -123,9 +133,9 @@ Three files will be created:
 
 ```python
 # load class
-from orthofinder_tools.orthofinder_plots import OrthofinderPlots
+from orthofinder_tools import create_plots
 
-OrthofinderPlots.create_plots(
+create_plots(
     tree='/path/to/SpeciesTree_rooted.txt',
     orthogroups_tsv='/path/to/Orthogroups.tsv',
     format='svg',

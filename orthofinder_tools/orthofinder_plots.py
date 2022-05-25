@@ -16,6 +16,7 @@
 __author__ = "Thomas Roder"  # thomas.roder@bioinformatics.unibe.ch
 __version__ = '0.2.0'
 
+import json
 import os, sys
 import pandas as pd
 import numpy as np
@@ -25,8 +26,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-from utils import load_og, load_hog
+from .utils import load_og, load_hog
 
 
 def import_tree(path_to_newick):
@@ -51,8 +51,18 @@ def import_roary_table(path_to_table, skipped_columns=14):
     return pandas_table.transpose()
 
 
-def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, n0=False):
-    out = os.path.abspath(out)
+def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, hog=False):
+    """
+    Create plots analogous to roary_plots for OrthoFinder OG/HOG
+
+    :param tree: newick tree as string or path to file
+    :param orthogroups_tsv: path to Orthogroups.tsv or N0.tsv
+    :param out: path to output directory
+    :param format: desired image format
+    :param no_labels: Hide labels on phylogenetic tree
+    :param hog: if True: expect hierarchical orthogroup file (e.g.N0.tsv), if False: expect Orthogroups.tsv
+    """
+    out = os.path.abspath(os.path.expanduser(out))
     os.makedirs(out, exist_ok=True)
     assert format in ['png', 'tiff', 'pdf', 'svg']
 
@@ -62,7 +72,7 @@ def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, n0=F
     assert type(tree) == Phylo.Newick.Tree
 
     if type(orthogroups_tsv) is str:
-        if n0:
+        if hog:
             orthogroups_tsv = load_hog(orthogroups_tsv, result_type='boolean')
         else:
             orthogroups_tsv = load_og(orthogroups_tsv, result_type='boolean')
@@ -75,17 +85,18 @@ def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, n0=F
     mdist = max([tree.distance(tree.root, x) for x in tree.get_terminals()])
 
     # Sort the matrix by the sum of strains presence
-    idx = orthogroups_tsv.sum(axis=1).sort_values(ascending=False).index
+    og_count = orthogroups_tsv.sum(axis=1)
+    idx = og_count.sort_values(ascending=False).index
     orthofinder_sorted = orthogroups_tsv.loc[idx]
 
     ## Plot pangenome frequency
     plt.figure(figsize=(7, 5))
 
-    number_of_strains = orthogroups_tsv.shape[1]
+    n_orthogenes, n_strains = orthogroups_tsv.shape
 
     plt.hist(
-        x=orthogroups_tsv.sum(axis=1),
-        bins=number_of_strains,
+        x=og_count,
+        bins=n_strains,
         histtype="stepfilled",
         alpha=.7
     )
@@ -129,35 +140,35 @@ def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, n0=F
 
         fig.subplots_adjust(wspace=0, hspace=0)
 
-        ax1.set_title('Orthofinder matrix\n(%d gene clusters)' % orthogroups_tsv.shape[0])
+        ax1.set_title('OrthoFinder matrix\n(%d gene clusters)' % n_orthogenes)
 
-        if no_labels:
+        def draw_tree(xlim, label_func):
             Phylo.draw(
                 tree=tree, axes=ax,
                 show_confidence=False,
-                label_func=lambda x: None,
+                label_func=label_func,
                 xticks=([],), yticks=([],),
                 ylabel=('',), xlabel=('',),
-                xlim=(-mdist * 0.1, mdist + mdist * 0.1),
+                xlim=xlim,
                 axis=('off',),
-                title=('Tree\n(%d strains)' % orthogroups_tsv.shape[1],),
+                title=('Tree\n(%d strains)' % n_strains,),
                 do_show=False,
             )
+
+        if no_labels:
+            draw_tree(
+                xlim=(-mdist * 0.1, mdist + mdist * 0.1),
+                label_func=lambda x: None
+            )
         else:
-            fsize = 12 - 0.1 * orthogroups_tsv.shape[1]
+            fsize = 12 - 0.1 * n_strains
             if fsize < 7:
                 fsize = 7
             with plt.rc_context({'font.size': fsize}):
-                Phylo.draw(tree, axes=ax,
-                           show_confidence=False,
-                           label_func=lambda x: str(x)[:10],
-                           xticks=([],), yticks=([],),
-                           ylabel=('',), xlabel=('',),
-                           xlim=(-mdist * 0.1, mdist + mdist * 0.45 - mdist * orthogroups_tsv.shape[1] * 0.001),
-                           axis=('off',),
-                           title=('Tree\n(%d strains)' % orthogroups_tsv.shape[1],),
-                           do_show=False,
-                           )
+                draw_tree(
+                    xlim=(-mdist * 0.1, mdist + mdist * 0.45 - mdist * n_strains * 0.001),
+                    label_func=lambda x: str(x)[:10]
+                )
 
         save_path = os.path.join(out, 'pangenome_matrix.' + format)
         plt.savefig(save_path, dpi=300)
@@ -166,31 +177,29 @@ def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, n0=F
     ## Plot the pangenome pie chart
     plt.figure(figsize=(10, 10))
 
-    core = orthogroups_tsv[(orthogroups_tsv.sum(axis=1) >= orthogroups_tsv.shape[1] * 0.99) & (
-            orthogroups_tsv.sum(axis=1) <= orthogroups_tsv.shape[1])].shape[0]
-    softcore = \
-        orthogroups_tsv[(orthogroups_tsv.sum(axis=1) >= orthogroups_tsv.shape[1] * 0.95) & (
-                orthogroups_tsv.sum(axis=1) < orthogroups_tsv.shape[1] * 0.99)].shape[0]
-    shell = orthogroups_tsv[(orthogroups_tsv.sum(axis=1) >= orthogroups_tsv.shape[1] * 0.15) & (
-            orthogroups_tsv.sum(axis=1) < orthogroups_tsv.shape[1] * 0.95)].shape[
-        0]
-    cloud = orthogroups_tsv[orthogroups_tsv.sum(axis=1) < orthogroups_tsv.shape[1] * 0.15].shape[0]
+    CORE, SOFT, SHELL = (n_strains * f for f in [.99, .95, .15])
 
-    total = orthogroups_tsv.shape[0]
+    core = ((og_count >= CORE) & (og_count <= n_strains)).sum()
+    softcore = ((og_count >= SOFT) & (og_count < CORE)).sum()
+    shell = ((og_count >= SHELL) & (og_count < SOFT)).sum()
+    cloud = (og_count < SHELL).sum()
 
     def my_autopct(pct):
-        val = int(round(pct * total / 100.0))
+        val = int(round(pct * n_orthogenes / 100.0))
         return '{v:d}'.format(v=val)
 
-    a = plt.pie(
+    pie_data = dict(zip(['core', 'softcore', 'shell', 'cloud'], [int(i) for i in (core, softcore, shell, cloud)]))
+    print('Pie data:', json.dumps(pie_data))
+
+    CORE, SOFT, SHELL = (int(i) for i in [CORE, SOFT, SHELL])
+    ax = plt.pie(
         x=[core, softcore, shell, cloud],
-        labels=['core\n(%d <= strains <= %d)' % (orthogroups_tsv.shape[1] * .99, orthogroups_tsv.shape[1]),
-                'soft-core\n(%d <= strains < %d)' % (
-                    orthogroups_tsv.shape[1] * .95, orthogroups_tsv.shape[1] * .99),
-                'shell\n(%d <= strains < %d)' % (orthogroups_tsv.shape[1] * .15, orthogroups_tsv.shape[1] * .95),
-                'cloud\n(strains < %d)' % (orthogroups_tsv.shape[1] * .15)],
-        explode=[0.1, 0.05, 0.02, 0], radius=0.9,
-        colors=[(0, 0, 1, float(x) / total) for x in (core, softcore, shell, cloud)],
+        labels=[f'core\n({CORE} <= strains <= {n_strains})',
+                f'soft-core\n({SOFT} <= strains < {CORE})',
+                f'shell\n({SHELL} <= strains < {SOFT})',
+                f'cloud\n(strains < {SHELL})'],
+        explode=[.1, .05, .02, 0], radius=.9,
+        colors=[(0, 0, 1, float(x) / n_orthogenes) for x in (core, softcore, shell, cloud)],
         autopct=my_autopct
     )
 
@@ -199,7 +208,11 @@ def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, n0=F
     plt.clf()
 
 
-if __name__ == "__main__":
+def main():
     import fire
 
     fire.Fire(create_plots)
+
+
+if __name__ == '__main__':
+    main()

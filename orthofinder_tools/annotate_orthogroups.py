@@ -1,19 +1,18 @@
-import os, sys
-import logging
+import os
 import pandas as pd
 from Bio import SeqIO
 from collections import Counter
 
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-from utils import load_og, load_hog
+from .utils import load_og, load_hog
 
 
 class OrthogroupToGeneName:
     def __init__(self, fasta_dir: str, file_endings='fasta'):
-        fasta_dir = os.path.abspath(fasta_dir)
+        fasta_dir = os.path.abspath(os.path.expanduser(fasta_dir))
         assert os.path.isdir(fasta_dir), F'fasta_dir does not exist: "{fasta_dir}"'
         self.fasta_dir = fasta_dir
         self.file_endings = file_endings
+        self.majority_df = None
 
     @property
     def majority_dict(self):
@@ -73,8 +72,8 @@ class OrthogroupToGeneName:
         self.gene_ids_df = load_og(og_tsv, result_type='gene-list')
         self.__load_gene_names()
 
-    def load_hog(self, n0_tsv: str):
-        self.gene_ids_df = load_hog(n0_tsv, result_type='gene-list')
+    def load_hog(self, hog_tsv: str):
+        self.gene_ids_df = load_hog(hog_tsv, result_type='gene-list')
         self.__load_gene_names()
 
     def __load_gene_names(self):
@@ -91,7 +90,8 @@ class OrthogroupToGeneName:
             lambda row: pd.Series(self.__majority_vote(row)),
             axis=1)
 
-    def __majority_vote(self, row):
+    @staticmethod
+    def __majority_vote(row):
         """ Get gene names set per HOG and count them. Disregards names with eAED in description,
         typically useless maker annotations"""
 
@@ -126,17 +126,35 @@ class OrthogroupToGeneName:
         return {gene.id: extract_description(gene) for gene in genes}
 
 
-def main(orthofinder_tsv: str, fasta_dir: str, out: str, n0: bool = True, file_endings='fasta'):
+def cli(orthogroups_tsv: str, fasta_dir: str, out: str, hog: bool = True, file_endings='fasta', simple: bool = True):
+    """
+    Calculate the most common gene name of each orthogroup by majority vote
+
+    :param orthogroups_tsv: path to Orthogroups.tsv or N0.tsv
+    :param fasta_dir: path to where the protein FASTAS that OrthoFinder used as input are stored
+    :param out: path to output file
+    :param hog: if True: expect hierarchical orthogroup file (e.g.N0.tsv), if False: expect Orthogroups.tsv
+    :param file_endings: file endings of the FASTA files (e.g. "faa", "fasta", "FASTA", etc)
+    :param simple: if True: output maps orthogenes to best names; if False: orthogenes are mapped
+    to best names and majority dict
+    """
     otg = OrthogroupToGeneName(fasta_dir=fasta_dir, file_endings=file_endings)
-    if n0:
-        otg.load_hog(n0_tsv=orthofinder_tsv)
+    if hog:
+        otg.load_hog(hog_tsv=orthogroups_tsv)
     else:
-        otg.load_og(og_tsv=orthofinder_tsv)
+        otg.load_og(og_tsv=orthogroups_tsv)
 
-    otg.save_majority_df(out)
+    if simple:
+        otg.save_orthogroup_to_best_name(out)
+    else:
+        otg.save_majority_df(out)
 
 
-if __name__ == "__main__":
-    import fire  # pip install fire # automated argparse
+def main():
+    import fire
 
-    fire.Fire(main)
+    fire.Fire(cli)
+
+
+if __name__ == '__main__':
+    main()
