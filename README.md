@@ -38,7 +38,8 @@ annotate_orthogroups \
     --fasta_dir /path/to/fastas \
     --file_endings faa \
     --out outfile.tsv \
-    --simple True
+    --simple True \
+    --header True
 ```
 
 If `--simple=False` resulting tsv looks like this:

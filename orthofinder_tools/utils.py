@@ -32,7 +32,7 @@ def load_og(og_tsv: str, result_type: str = 'gene-list'):
 
     gene_ids_df.set_index('Orthogroup', inplace=True)
 
-    gene_ids_df = gene_ids_df.applymap(apply_fn)
+    gene_ids_df = gene_ids_df.map(apply_fn)
 
     return gene_ids_df
 
@@ -55,6 +55,6 @@ def load_hog(hog_tsv: str, result_type: str = 'gene-list'):
 
     gene_ids_df.drop(columns=['OG', 'Gene Tree Parent Clade'], inplace=True)
 
-    gene_ids_df = gene_ids_df.applymap(apply_fn)
+    gene_ids_df = gene_ids_df.map(apply_fn)
 
     return gene_ids_df

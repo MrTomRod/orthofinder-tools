@@ -2,7 +2,7 @@
 # How to upload:
 #  - change package version in `setup.py` and `__init__.py`
 #  - `python setup.py sdist`
-#  - `twine upload dist/opengenomebrowser-tools-?.tar.gz`
+#  - `twine upload dist/orthofinder-tools-?.tar.gz`
 import pathlib
 from setuptools import setup
 

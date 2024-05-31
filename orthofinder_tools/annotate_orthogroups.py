@@ -20,7 +20,7 @@ class OrthogroupToGeneName:
         return {
             orthogroup: majority_name
             for orthogroup, majority_name
-            in self.majority_df['Best Gene Name'].iteritems()
+            in self.majority_df['Best Gene Name'].items()
         }
 
     def save_majority_df(self, out_file: str, header: bool = True):
