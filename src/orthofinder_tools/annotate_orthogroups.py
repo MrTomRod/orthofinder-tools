@@ -1,3 +1,4 @@
+import json
 import os
 import pandas as pd
 from Bio import SeqIO
@@ -103,13 +104,11 @@ class OrthogroupToGeneName:
 
         names_to_count = Counter(all_names)
 
-        return names_to_count.most_common(1)[0][0], str(
-            names_to_count)  # return best gene name and gene name occurrences as string
+        return names_to_count.most_common(1)[0][0], json.dumps(names_to_count)  # return best gene name and gene name occurrences as string
 
     def __get_gene_id_to_name_dict(self, strain):
         fasta_file_path = os.path.join(self.fasta_dir + F'/{strain}.{self.file_endings}')
         assert os.path.isfile(fasta_file_path), F'{self.file_endings} file "{fasta_file_path}" is missing!'
-        genes = SeqIO.parse(fasta_file_path, "fasta")
 
         def extract_description(gene):
             description = gene.description.split(' ', maxsplit=1)
@@ -125,7 +124,11 @@ class OrthogroupToGeneName:
             else:
                 return description
 
-        return {gene.id: extract_description(gene) for gene in genes}
+        with open(fasta_file_path) as f:
+            genes = SeqIO.parse(f, "fasta")
+            res = {gene.id: extract_description(gene) for gene in genes}
+
+        return res
 
 
 def cli(

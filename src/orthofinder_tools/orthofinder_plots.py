@@ -30,7 +30,7 @@ from .utils import load_og, load_hog
 
 
 def import_tree(path_to_newick):
-    assert os.path.isfile(path_to_newick)
+    assert os.path.isfile(path_to_newick), f'File not found: {path_to_newick}'
     return Phylo.read(path_to_newick, 'newick')
 
 
@@ -131,12 +131,7 @@ def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, hog=
         ax1.set_xticks([])
         ax1.axis('off')
 
-        ax = fig.add_subplot(1, 2, 1)
-        # matplotlib v1/2 workaround
-        try:
-            ax = plt.subplot2grid((1, 40), (0, 0), colspan=10, facecolor='white')
-        except AttributeError:
-            ax = plt.subplot2grid((1, 40), (0, 0), colspan=10, axisbg='white')
+        ax = plt.subplot2grid((1, 40), (0, 0), colspan=10, facecolor='white')
 
         fig.subplots_adjust(wspace=0, hspace=0)
 

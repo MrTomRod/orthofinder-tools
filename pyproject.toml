@@ -1,0 +1,36 @@
+[project]
+name = "orthofinder-tools"
+version = "0.0.3"
+description = "Annotate orthogenes and create Roary-like plots"
+readme = "README.md"
+authors = [
+    { name = "Thomas Roder", email = "roder.thomas@gmail.com" }
+]
+requires-python = ">=3.10"
+license = { text = "MIT" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "numpy",
+    "pandas",
+    "biopython",
+    "fire",
+    "matplotlib",
+    "seaborn",
+]
+
+[project.urls]
+Repository = "https://github.com/MrTomRod/orthofinder-tools/"
+
+[project.scripts]
+annotate_orthogroups = "orthofinder_tools.annotate_orthogroups:main"
+orthofinder_plots = "orthofinder_tools.orthofinder_plots:main"
+
+[build-system]
+requires = ["uv_build>=0.9.21,<0.10.0"]
+build-backend = "uv_build"
