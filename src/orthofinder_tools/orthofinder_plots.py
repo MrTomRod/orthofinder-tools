@@ -14,35 +14,45 @@
 # GNU General Public License for more details.
 
 __author__ = "Thomas Roder"  # thomas.roder@bioinformatics.unibe.ch
-__version__ = '0.2.0'
 
 import json
-import os, sys
+import os
 import pandas as pd
 import numpy as np
 from Bio import Phylo
-
-import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 import seaborn as sns
-
 from .utils import load_og, load_hog
 
 
 def import_tree(path_to_newick):
-    assert os.path.isfile(path_to_newick), f'File not found: {path_to_newick}'
-    return Phylo.read(path_to_newick, 'newick')
+    if not os.path.isfile(path_to_newick):
+        raise FileNotFoundError(f'Tree file not found: {path_to_newick}')
+    try:
+        return Phylo.read(path_to_newick, 'newick')
+    except Exception as e:
+        raise ValueError(f"Could not read tree file {path_to_newick}: {e}")
 
 
 def import_roary_table(path_to_table, skipped_columns=14):
-    assert os.path.isfile(path_to_table)
-    pandas_table = pd.read_csv(path_to_table, sep=',', low_memory=False)
+    if not os.path.isfile(path_to_table):
+        raise FileNotFoundError(f"Roary table file not found: {path_to_table}")
+
+    try:
+        pandas_table = pd.read_csv(path_to_table, sep=',', low_memory=False)
+    except Exception as e:
+        raise ValueError(f"Could not read roary table {path_to_table}: {e}")
+
+    if 'Gene' not in pandas_table.columns:
+        raise ValueError(f"Roary table {path_to_table} is missing 'Gene' column")
 
     # Set index (group name)
     pandas_table.set_index('Gene', inplace=True)
-    # Drop the other info columns
 
-    pandas_table.drop(list(pandas_table.columns[:skipped_columns - 1]), axis=1, inplace=True)
+    # Drop the other info columns
+    cols_to_drop = list(pandas_table.columns[:skipped_columns - 1])
+    pandas_table.drop(cols_to_drop, axis=1, inplace=True)
 
     # Transform it in a presence/absence matrix (1/0)
     pandas_table.replace('.{2,100}', 1, regex=True, inplace=True)
@@ -51,95 +61,52 @@ def import_roary_table(path_to_table, skipped_columns=14):
     return pandas_table.transpose()
 
 
-def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, hog=False):
-    """
-    Create plots analogous to roary_plots for OrthoFinder OG/HOG
-
-    :param tree: newick tree as string or path to file
-    :param orthogroups_tsv: path to Orthogroups.tsv or N0.tsv
-    :param out: path to output directory
-    :param format: desired image format
-    :param no_labels: Hide labels on phylogenetic tree
-    :param hog: if True: expect hierarchical orthogroup file (e.g.N0.tsv), if False: expect Orthogroups.tsv
-    """
-    out = os.path.abspath(os.path.expanduser(out))
-    os.makedirs(out, exist_ok=True)
-    assert format in ['png', 'tiff', 'pdf', 'svg']
-
-    if type(tree) == str:
-        tree = os.path.abspath(tree)
-        tree = import_tree(tree)
-    assert type(tree) == Phylo.Newick.Tree
-
-    if type(orthogroups_tsv) is str:
-        if hog:
-            orthogroups_tsv = load_hog(orthogroups_tsv, result_type='boolean')
-        else:
-            orthogroups_tsv = load_og(orthogroups_tsv, result_type='boolean')
-    assert type(orthogroups_tsv) == pd.DataFrame
-
-    matplotlib.use('Agg')
-    sns.set_style('white')
-
-    # Max distance to create better plots
-    mdist = max([tree.distance(tree.root, x) for x in tree.get_terminals()])
-
-    # Sort the matrix by the sum of strains presence
-    og_count = orthogroups_tsv.sum(axis=1)
-    idx = og_count.sort_values(ascending=False).index
-    orthofinder_sorted = orthogroups_tsv.loc[idx]
-
-    ## Plot pangenome frequency
-    plt.figure(figsize=(7, 5))
-
-    n_orthogenes, n_strains = orthogroups_tsv.shape
-
+def plot_pangenome_frequency(og_count, n_strains, out_path):
+    """Plot pangenome frequency histogram."""
+    fig = plt.figure(figsize=(7, 5))
     plt.hist(
         x=og_count,
         bins=n_strains,
         histtype="stepfilled",
         alpha=.7
     )
-
     plt.xlabel('No. of genomes')
     plt.ylabel('No. of genes')
+    sns.despine(left=True, bottom=True)
+    plt.savefig(out_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
 
-    sns.despine(left=True,
-                bottom=True)
 
-    save_path = os.path.join(out, 'pangenome_frequency.' + format)
-    plt.savefig(save_path, dpi=300)
-    plt.clf()
+def plot_pangenome_matrix(tree, orthofinder_sorted, n_orthogenes, n_strains, out_path,
+                          figsize=(17, 10), no_labels=False, tree_width=1, matrix_width=3, wspace=0.0):
+    """Plot presence/absence matrix against the tree."""
+    mdist = max([tree.distance(tree.root, x) for x in tree.get_terminals()])
 
-    # Sort the matrix according to tip labels in the tree
-    tree_tip_labels = tree.get_terminals()
-    orthofinder_sorted = orthofinder_sorted[[x.name for x in tree_tip_labels]]
-
-    ## Plot presence/absence matrix against the tree
     with sns.axes_style('whitegrid'):
-        fig = plt.figure(figsize=(17, 10))
+        fig = plt.figure(figsize=figsize)
 
-        ax1 = plt.subplot2grid((1, 40), (0, 10), colspan=30)
-        a = ax1.matshow(
+        # Use GridSpec with minimal margins
+        gs = GridSpec(1, 2, width_ratios=[tree_width, matrix_width], wspace=wspace,
+                      left=0.02, right=0.98, top=0.95, bottom=0.05)
+
+        ax_matrix = fig.add_subplot(gs[1])
+        ax_matrix.matshow(
             Z=orthofinder_sorted.T,
             cmap=plt.cm.Blues,
             vmin=0, vmax=1,
             aspect='auto',
             interpolation='none',
         )
-        ax1.set_yticks([])
-        ax1.set_xticks([])
-        ax1.axis('off')
+        ax_matrix.set_yticks([])
+        ax_matrix.set_xticks([])
+        ax_matrix.axis('off')
+        ax_matrix.set_title('OrthoFinder matrix\n(%d gene clusters)' % n_orthogenes)
 
-        ax = plt.subplot2grid((1, 40), (0, 0), colspan=10, facecolor='white')
-
-        fig.subplots_adjust(wspace=0, hspace=0)
-
-        ax1.set_title('OrthoFinder matrix\n(%d gene clusters)' % n_orthogenes)
+        ax_tree = fig.add_subplot(gs[0], facecolor='white')
 
         def draw_tree(xlim, label_func):
             Phylo.draw(
-                tree=tree, axes=ax,
+                tree=tree, axes=ax_tree,
                 show_confidence=False,
                 label_func=label_func,
                 xticks=([],), yticks=([],),
@@ -152,7 +119,7 @@ def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, hog=
 
         if no_labels:
             draw_tree(
-                xlim=(-mdist * 0.1, mdist + mdist * 0.1),
+                xlim=(-mdist * 0.02, mdist + mdist * 0.02),
                 label_func=lambda x: None
             )
         else:
@@ -161,16 +128,17 @@ def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, hog=
                 fsize = 7
             with plt.rc_context({'font.size': fsize}):
                 draw_tree(
-                    xlim=(-mdist * 0.1, mdist + mdist * 0.45 - mdist * n_strains * 0.001),
-                    label_func=lambda x: str(x)[:10]
+                    xlim=(-mdist * 0.02, mdist + mdist * 0.2),
+                    label_func=str
                 )
 
-        save_path = os.path.join(out, 'pangenome_matrix.' + format)
-        plt.savefig(save_path, dpi=300)
-        plt.clf()
+        plt.savefig(out_path, dpi=300, bbox_inches='tight')
+        plt.close(fig)
 
-    ## Plot the pangenome pie chart
-    plt.figure(figsize=(10, 10))
+
+def plot_pangenome_pie(og_count, n_orthogenes, n_strains, out_path):
+    """Plot the pangenome pie chart."""
+    fig = plt.figure(figsize=(10, 10))
 
     CORE, SOFT, SHELL = (n_strains * f for f in [.99, .95, .15])
 
@@ -186,21 +154,105 @@ def create_plots(tree, orthogroups_tsv, out, format='svg', no_labels=False, hog=
     pie_data = dict(zip(['core', 'softcore', 'shell', 'cloud'], [int(i) for i in (core, softcore, shell, cloud)]))
     print('Pie data:', json.dumps(pie_data))
 
-    CORE, SOFT, SHELL = (int(i) for i in [CORE, SOFT, SHELL])
-    ax = plt.pie(
+    CORE_int, SOFT_int, SHELL_int = (int(i) for i in [CORE, SOFT, SHELL])
+    plt.pie(
         x=[core, softcore, shell, cloud],
-        labels=[f'core\n({CORE} <= strains <= {n_strains})',
-                f'soft-core\n({SOFT} <= strains < {CORE})',
-                f'shell\n({SHELL} <= strains < {SOFT})',
-                f'cloud\n(strains < {SHELL})'],
+        labels=[f'core\n({CORE_int} <= strains <= {n_strains})',
+                f'soft-core\n({SOFT_int} <= strains < {CORE_int})',
+                f'shell\n({SHELL_int} <= strains < {SOFT_int})',
+                f'cloud\n(strains < {SHELL_int})'],
         explode=[.1, .05, .02, 0], radius=.9,
         colors=[(0, 0, 1, float(x) / n_orthogenes) for x in (core, softcore, shell, cloud)],
         autopct=my_autopct
     )
 
-    save_path = os.path.join(out, 'pangenome_pie.' + format)
-    plt.savefig(save_path, dpi=300)
-    plt.clf()
+    plt.savefig(out_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
+
+def create_plots(
+        tree,
+        orthogroups_tsv,
+        out,
+        format='svg',
+        figsize="17,10",
+        no_labels=False,
+        hog=False,
+        tree_width=1,
+        matrix_width=3,
+        wspace=0.0
+):
+    """
+    Create plots analogous to roary_plots for OrthoFinder OG/HOG
+
+    :param tree: newick tree as string or path to file
+    :param orthogroups_tsv: path to Orthogroups.tsv or N0.tsv
+    :param out: path to output directory
+    :param format: desired image format
+    :param figsize: size of the presence-absence-figure, e.g. "17,10"
+    :param no_labels: Hide labels on phylogenetic tree
+    :param hog: if True: expect hierarchical orthogroup file (e.g.N0.tsv), if False: expect Orthogroups.tsv
+    :param tree_width: relative width of the tree plot
+    :param matrix_width: relative width of the matrix plot
+    :param wspace: space between the tree and the matrix
+    """
+    out = os.path.abspath(os.path.expanduser(out))
+    os.makedirs(out, exist_ok=True)
+    assert format in ['png', 'tiff', 'pdf', 'svg'], f'{format=} is invalid'
+
+    if isinstance(tree, str):
+        tree = import_tree(os.path.abspath(tree))
+
+    if not isinstance(tree, Phylo.Newick.Tree):
+        raise TypeError(f"tree must be a Newick Tree object or a path to a newick file, got {type(tree)}")
+
+    if type(orthogroups_tsv) is str:
+        if hog:
+            orthogroups_tsv = load_hog(orthogroups_tsv, result_type='boolean')
+        else:
+            orthogroups_tsv = load_og(orthogroups_tsv, result_type='boolean')
+
+    if not isinstance(orthogroups_tsv, pd.DataFrame):
+        raise TypeError(
+            f"orthogroups_tsv must be a pandas DataFrame or a path to a tsv file, got {type(orthogroups_tsv)}")
+
+    if isinstance(figsize, str):
+        try:
+            figsize = tuple(float(x) for x in figsize.split(','))
+        except ValueError:
+            raise ValueError(f"figsize must be a comma-separated pair of numbers, got {figsize}")
+
+    sns.set_style('white')
+
+    # Data preparation
+    n_orthogenes, n_strains = orthogroups_tsv.shape
+    og_count = orthogroups_tsv.sum(axis=1)
+
+    # Sort for matrix plot
+    idx = og_count.sort_values(ascending=False).index
+    orthofinder_sorted = orthogroups_tsv.loc[idx]
+    tree_tip_labels = tree.get_terminals()
+    orthofinder_sorted = orthofinder_sorted[[x.name for x in tree_tip_labels]]
+
+    # 1. Pangenome frequency
+    plot_pangenome_frequency(
+        og_count, n_strains,
+        os.path.join(out, 'pangenome_frequency.' + format)
+    )
+
+    # 2. Presence/absence matrix
+    plot_pangenome_matrix(
+        tree, orthofinder_sorted, n_orthogenes, n_strains,
+        os.path.join(out, 'pangenome_matrix.' + format),
+        figsize=figsize, no_labels=no_labels,
+        tree_width=tree_width, matrix_width=matrix_width, wspace=wspace
+    )
+
+    # 3. Pangenome pie chart
+    plot_pangenome_pie(
+        og_count, n_orthogenes, n_strains,
+        os.path.join(out, 'pangenome_pie.' + format)
+    )
 
 
 def main():

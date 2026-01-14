@@ -1,6 +1,6 @@
 [project]
 name = "orthofinder-tools"
-version = "0.0.3"
+version = "0.0.4"
 description = "Annotate orthogenes and create Roary-like plots"
 readme = "README.md"
 authors = [

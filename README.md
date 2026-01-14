@@ -131,6 +131,10 @@ Marco Galardini (marco@ebi.ac.uk).
 # Command line usage:
 orthofinder_plots --help
 orthofinder_plots --tree data/SpeciesTree_rooted.txt --orthogroups_tsv data/Orthogroups.tsv --out output
+
+# Advanced layout control:
+orthofinder_plots --tree data/SpeciesTree_rooted.txt --orthogroups_tsv data/Orthogroups.tsv --out output \
+    --figsize "30,10" --tree_width 1 --matrix_width 2 --wspace 0.05
 ```
 
 Three files will be created:
@@ -150,6 +154,10 @@ create_plots(
     orthogroups_tsv='/path/to/Orthogroups.tsv',
     format='svg',
     no_labels=False,
-    out='/path/to/output/folder'
+    out='/path/to/output/folder',
+    figsize=(30, 10),  # Figure size (width, height)
+    tree_width=1,      # Relative width of the tree
+    matrix_width=3,    # Relative width of the matrix
+    wspace=0.0         # Space between tree and matrix (increase this if matrix overlaps tree labels)
 )
 ```
